@@ -16,7 +16,7 @@ function fixture(scan = async () => snapshot(), options = {}) {
   const store = { read: async () => saved, write: async (selected, enabled) => { saved = { identity: selected, enabled }; } };
   const host = new EventEmitter();
   const monitor = createWorkspaceMonitor({ scan, logger, store, processRef: host, readCrashEvents: async () => [], ...options });
-  return { monitor, records, store, host };
+  return { monitor, records, store, host, logger };
 }
 test('selecting binds exact creation timestamp and account; detached return values cannot mutate binding', async t => {
   const { monitor } = fixture();
@@ -128,4 +128,50 @@ test('interrupted work keeps collecting a later crash and deduplicates repeated 
   assert.equal(monitor.getState().reason.code, 'WORKSPACE_PROCESS_MISSING');
   assert.equal(records.filter(item => item.type === 'workspace.crash.event').length, 1);
   assert.equal(monitor.getState().canSend, false);
+});
+test('retired runtime events retain their original session and failed logs cannot interrupt a new binding', async t => {
+  let current = snapshot();
+  const { monitor, records, logger } = fixture(async () => current);
+  t.after(() => monitor.dispose());
+  await monitor.select(identity);
+  const oldScope = monitor.captureEventScope();
+  assert.equal(Object.isFrozen(oldScope), true);
+  const nextIdentity = { pid: 456, startedAt: '2026-10-30T09:00:00.1234567Z', accountId: 'wxid_synthetic_second' };
+  current = snapshot({ ...nextIdentity, account: { id: nextIdentity.accountId, verified: true } });
+  await monitor.select(nextIdentity);
+  const currentScope = monitor.captureEventScope();
+  assert.notEqual(oldScope.sessionRef, currentScope.sessionRef);
+  logger.record = async (type, details) => { records.push({ type, details }); return type !== 'runtime.retirement.failed'; };
+  assert.equal(await monitor.recordEvent('runtime.retirement.failed', { operation: 'dispose' }, oldScope), false);
+  assert.equal(records.at(-1).details.sessionRef, oldScope.sessionRef);
+  assert.equal(monitor.getState().status, 'active');
+  assert.deepEqual(monitor.getState().selected, nextIdentity);
+  assert.equal(monitor.getState().canSend, true);
+});
+test('reselecting the same identity also separates retired runtime log failures by generation', async t => {
+  const { monitor, records, logger } = fixture();
+  t.after(() => monitor.dispose());
+  await monitor.select(identity);
+  const oldScope = monitor.captureEventScope();
+  await monitor.select(identity);
+  const currentScope = monitor.captureEventScope();
+  assert.equal(oldScope.sessionRef, currentScope.sessionRef);
+  assert.notEqual(oldScope.generation, currentScope.generation);
+  logger.record = async (type, details) => { records.push({ type, details }); return type !== 'runtime.error'; };
+  await monitor.recordEvent('runtime.error', {}, oldScope);
+  assert.equal(monitor.getState().status, 'active');
+  await monitor.recordEvent('runtime.error', {}, currentScope);
+  assert.equal(monitor.getState().reason.code, 'WORKSPACE_LOG_UNAVAILABLE');
+});
+test('unscoped current events keep their failure behavior and invalid scopes do not fall back to the current selection', async t => {
+  const { monitor, records, logger } = fixture();
+  t.after(() => monitor.dispose());
+  await monitor.select(identity);
+  const before = records.length;
+  await assert.rejects(monitor.recordEvent('runtime.error', {}, null), { code: 'WORKSPACE_EVENT_SCOPE_INVALID' });
+  assert.equal(records.length, before);
+  assert.equal(monitor.getState().status, 'active');
+  logger.record = async (type, details) => { records.push({ type, details }); return type !== 'runtime.error'; };
+  await monitor.recordEvent('runtime.error');
+  assert.equal(monitor.getState().reason.code, 'WORKSPACE_LOG_UNAVAILABLE');
 });

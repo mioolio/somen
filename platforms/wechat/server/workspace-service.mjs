@@ -2,12 +2,14 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { createWorkspaceMonitor } from '../monitor/workspace-monitor.mjs';
 import { createNativeRuntime } from '../runtime/native-runtime.mjs';
+import { createRuntimeRetirement } from '../runtime/runtime-retirement.mjs';
 import { scanWindowsProcesses } from './probe.mjs';
 import { normalizeSnapshot } from './normalize-snapshot.mjs';
 import { individualContacts } from './contact-scope.mjs';
 import { createSendJournal } from './send-journal.mjs';
 import { stageImageUpload } from './image-upload.mjs';
 import { createEmoticonService } from './emoticon-service.mjs';
+import { createWorkspacePauses } from './workspace-pauses.mjs';
 
 /**
  * Boundary: selected account + one-contact authorization + native action lifecycle.
@@ -20,11 +22,14 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
 } = {}) {
   let binding = null, runtime = null, contacts = [], target = null, blocked = false, lastReceipt = null;
   let runtimeCapabilities = {};
-  // Retired native owners remain reachable while their independent workers retain callbacks.
-  const retiredRuntimes = [];
+  const runtimeScopes = new WeakMap();
+  const pauses = createWorkspacePauses();
   let queue = Promise.resolve(), runtimeRevision = 0, disposed = false;
   const journal = createSendJournal({ directory });
   const monitor = createWorkspaceMonitor({ scan, directory });
+  const retiredRuntimes = createRuntimeRetirement({ onEvent: (event, scope) => {
+    void monitor.recordEvent(event.type, event, scope).catch(() => {});
+  } });
   const emoticons = createEmoticonService({ getBinding: () => binding, sendToken: input => send('text', input) });
   const exclusive = operation => { const result = queue.then(operation); queue = result.catch(() => {}); return result; };
   const noSend = (message, code = 'WORKSPACE_NOT_READY') => Object.assign(new Error(message), { code, statusCode: 409, outcome: 'not-sent' });
@@ -44,14 +49,16 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
     }
     if (!runtime) {
       const revision = runtimeRevision;
+      const eventScope = monitor.captureEventScope();
       const created = await runtimeFactory({ binding, allowValidation: process.env.SOMEN_WECHAT_VALIDATION === binding.version, onEvent(event) {
-        void monitor.recordEvent(event.type, { ...event, ...(typeof event.code === 'number' ? { exitCode: event.code } : {}) });
+        void monitor.recordEvent(event.type, { ...event, ...(typeof event.code === 'number' ? { exitCode: event.code } : {}) }, eventScope).catch(() => {});
         if (revision === runtimeRevision && ['native.worker-error', 'native.worker-exit', 'native.operation-timeout', 'native.detached',
           'native.agent-error', 'native.initialization-retained', 'native.initialization-failed',
           'native.worker-unhandled-error', 'native.worker-unhandled-rejection'].includes(event.type)) blocked = true;
       } });
+      runtimeScopes.set(created, eventScope);
       if (disposed || revision !== runtimeRevision) {
-        await created.dispose();
+        retiredRuntimes.retire(created, eventScope);
         throw noSend('工作会话已停止。', 'WORKSPACE_DISPOSED');
       }
       runtime = created;
@@ -63,7 +70,7 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
     return {
       binding, status: state.status === 'interrupted' ? 'lost' : state.status === 'stopped' ? 'idle' : blocked ? 'error' : state.status,
       reason: state.reason || (blocked ? { code: 'NATIVE_BLOCKED', message: '原生操作已暂停。' } : null), contacts, target, lastCheckedAt: state.lastCheckedAt,
-      diagnostics: { logStatus: state.logStatus, retainedRuntimeCount: retiredRuntimes.length }, lastReceipt,
+      diagnostics: { logStatus: state.logStatus, retainedRuntimeCount: retiredRuntimes.count }, lastReceipt,
       capabilities: { text: Boolean(target && runtime && runtimeCapabilities.text === true && !blocked && state.canSend), image: Boolean(target && runtime && runtimeCapabilities.image === true && !blocked && state.canSend),
         emoticon: Boolean(target && runtime && runtimeCapabilities.text === true && !blocked && state.canSend && emoticons.available(binding?.version)),
         emojiSearch: emoticons.available(binding?.version), emojiAdd: false },
@@ -112,17 +119,19 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
       if (disposed) throw noSend('工作会话已停止。', 'WORKSPACE_DISPOSED');
       const instance = snapshot.instances.find(row => row.pid === input.pid && row.startedAt === input.startedAt && row.account?.verified === true && row.role === 'main');
       if (!instance) throw noSend('微信身份已变化，请刷新列表。');
-      if (binding?.pid === instance.pid && binding.startedAt === instance.startedAt && binding.accountId === instance.account.id
-        && monitor.getState().status === 'active' && !blocked) return getState();
-      if (runtime) {
-        blocked = true;
-        runtimeRevision++;
-        const result = await runtime.dispose();
-        if (result?.disposed !== true && result?.quiesced !== true) throw noSend('上次原生任务尚未结束，暂不能切换。');
-        if (result.retained) retiredRuntimes.push(runtime);
+      if (binding?.pid === instance.pid && binding.startedAt === instance.startedAt && binding.accountId === instance.account.id) {
+        // Selecting an existing binding is navigation, not native teardown or a send-error reset.
+        if (monitor.getState().status !== 'active') await monitor.select(binding);
+        return getState();
       }
-      runtime = null; runtimeCapabilities = {}; contacts = []; target = null; blocked = false; lastReceipt = null;
+      // Fence the previous runtime locally; its independent native owner may outlive this selection.
+      const previous = runtime;
+      pauses.remember(binding, { blocked, lastReceipt });
+      runtimeRevision++;
+      runtime = null; runtimeCapabilities = {}; contacts = []; target = null;
+      retiredRuntimes.retire(previous, previous ? runtimeScopes.get(previous) : undefined);
       binding = { pid: instance.pid, startedAt: instance.startedAt, accountId: instance.account.id, version: instance.version, executablePath: instance.executablePath };
+      ({ blocked, lastReceipt } = pauses.restore(binding));
       await monitor.select(binding);
       return getState();
     }),
@@ -168,8 +177,9 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
       if (disposed) return;
       disposed = true; runtimeRevision++;
       blocked = true;
+      retiredRuntimes.retire(runtime, runtime ? runtimeScopes.get(runtime) : undefined);
+      runtime = null;
       await monitor.dispose();
-      if (runtime) await runtime.dispose();
     },
   };
 }

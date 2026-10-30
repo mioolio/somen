@@ -36,19 +36,13 @@
 .detail-grid dd { color: #71809a; font-size: 12px; line-height: 1.8; margin: 0; overflow-wrap: anywhere; }
 .detail-grid .mono { font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; }
 .detail-wide { grid-column: 1 / -1; }
-.unidentified-note { font-size: 12px; color: #64748b; line-height: 1.8; margin-top: 15px; }
-.candidate-list { margin: 12px 0 0; padding-left: 18px; color: #64748b; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
-.candidate-list li + li { margin-top: 8px; }
-.candidate-list strong { font-weight: 500; }
-.candidate-list span { margin-left: 8px; color: #64748b; font-size: 12px; }
-.candidate-list p { color: #64748b; }
 .instances-empty { text-align: center; padding: 50px 24px 56px; min-height: 300px; }
 .empty-wechat { display: grid; place-items: center; width: 67px; height: 67px; color: #64748b; border: 1px solid #e9f0ec; background: #f5f9f7; border-radius: 21px; margin: 0 auto 20px; position: relative; }
 .empty-wechat::after { content: ''; position: absolute; inset: -7px; border: 1px dashed #e7eee9; border-radius: 27px; }
 .instances-empty h3 { color: #6c7c95; font-size: 13px; font-weight: 500; }
 .instances-empty p { color: #64748b; font-size: 12px; line-height: 1.8; margin-top: 10px; }
 .clear-filter-button { display: inline-flex; align-items: center; gap: 5px; margin-top: 23px; border: 0; color: #6f95e2; font-size: 12px; background: transparent; padding: 5px 8px; border-radius: 5px; }
-@media (max-width: 1200px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.3fr) minmax(95px, .7fr) minmax(95px, .7fr) 48px; gap: 15px; } .source-label { display: none; } }
+@media (max-width: 1200px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.3fr) minmax(95px, .7fr) minmax(95px, .7fr) 48px; gap: 15px; } }
 @media (max-width: 1000px) and (min-width: 761px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.3fr) minmax(85px, .8fr) 48px; gap: 13px; } .instance-columns span:nth-child(3), .instance-version { display: none; } .instance-process { gap: 7px; } .instance-details { padding-left: 25px; } }
 @media (max-width: 760px) { .instance-columns { padding: 12px 19px; } .instance-summary { padding: 20px 19px; } .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.2fr) minmax(80px, .7fr) minmax(85px, .7fr) 18px; gap: 11px; } .row-expand > span { display: none; } .account-avatar { width: 33px; height: 33px; border-radius: 10px; } .instance-identity { gap: 9px; } .account-name { font-size: 14px; } .instance-details { padding-left: 19px; padding-right: 19px; } .detail-grid { gap: 14px 20px; } }
 @media (max-width: 560px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1fr) 86px 17px; gap: 10px; } .instance-columns span:nth-child(3), .instance-version { display: none; } .account-name { font-size: 14px; } .pid-label strong { font-size: 12px; } .process-name { font-size: 12px; } .instances-empty { padding-left: 18px; padding-right: 18px; } }

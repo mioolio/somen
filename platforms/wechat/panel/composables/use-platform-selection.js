@@ -1,4 +1,4 @@
-/** 边界：平台选择器的一次性绑定操作和错误状态；挂载不选择、不重试，不负责路由或业务运行。 */
+/** 边界：平台选择器的绑定状态；精确绑定即可进入工作，不判断原生就绪或解除发送锁；挂载不选择、不重试。 */
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { selectWorkInstance, readWorkSelection, isCurrentWorkInstance } from '../api/platform-selection.js';
 

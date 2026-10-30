@@ -13,25 +13,3 @@ export function formatDuration(value) {
   if (!Number.isFinite(milliseconds)) return '—';
   return milliseconds < 1000 ? `${Math.round(milliseconds)} ms` : `${(milliseconds / 1000).toFixed(1)} s`;
 }
-
-export function formatEvidence(value) {
-  if (Array.isArray(value)) return value.map(formatEvidence).join('；');
-  if (value && typeof value === 'object') return JSON.stringify(value);
-  return String(value ?? '');
-}
-
-export function sourceLabel(value) {
-  const sources = {
-    'verified-current-account': '当前账号只读识别',
-    'file-handle': '进程文件句柄',
-    'open-file-handle': '进程文件句柄',
-    'open-handle': '进程文件句柄',
-    handle: '进程文件句柄',
-    'restart-manager': '文件占用关系',
-    'command-line': '进程启动参数',
-    'process-command-line': '进程启动参数',
-    'window-title': '窗口标题',
-    memory: '进程信息',
-  };
-  return sources[value] || value || '本地识别';
-}

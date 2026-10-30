@@ -6,9 +6,10 @@ export const readWorkSelection = async signal => {
   return response.workspace || response;
 };
 export function isCurrentWorkInstance(workspace, instance) {
-  return workspace?.status === 'active' && workspace.binding?.pid === instance?.pid
-    && workspace.binding?.startedAt === instance?.startedAt
-    && workspace.binding?.accountId === instance?.account?.id;
+  const binding = workspace?.binding;
+  return Boolean(binding && instance && binding.pid === instance.pid
+    && binding.startedAt === instance.startedAt && typeof instance.account?.id === 'string'
+    && binding.accountId === instance.account.id);
 }
 
 export async function selectWorkInstance(instance) {
@@ -17,16 +18,13 @@ export async function selectWorkInstance(instance) {
     || instance.pid < 1 || typeof instance.startedAt !== 'string' || !instance.startedAt) {
     throw new Error('请刷新后选择已确认的实例');
   }
-  // Read before every click action: an already active binding must never be rebuilt.
-  const current = await readWorkSelection();
-  if (isCurrentWorkInstance(current, instance)) return current;
+  // Every click submits selection intent. The backend owns exact-binding
+  // idempotency, fresh identity checks and preservation of unknown-send locks.
   const response = await workspaceRequest('/workspace/select', {
     method: 'POST', body: { pid: instance.pid, startedAt: instance.startedAt },
   });
   const workspace = response.workspace || response;
-  if (workspace.status !== 'active' || workspace.binding?.pid !== instance.pid
-    || workspace.binding?.startedAt !== instance.startedAt
-    || workspace.binding?.accountId !== instance.account.id) {
+  if (!isCurrentWorkInstance(workspace, instance)) {
     throw new Error(workspace.reason?.message || '工作实例尚未确认');
   }
   return workspace;

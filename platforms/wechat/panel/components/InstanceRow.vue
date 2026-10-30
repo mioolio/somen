@@ -1,8 +1,8 @@
 <script setup>
-/** 边界：呈现单个实例、证据与选择按钮；仅发出选择事件，不绑定账号或读取联系人。 */
+/** 边界：呈现单个实例与选择按钮；仅发出选择事件，不绑定账号或读取联系人。 */
 import { computed } from 'vue';
 import { UserRound, ChevronDown, Check, CircleHelp, Layers } from 'lucide-vue-next';
-import { formatTime, sourceLabel, formatEvidence } from '../utils/format.js';
+import { formatTime } from '../utils/format.js';
 const props = defineProps({ instance: { type: Object, required: true }, selectionBusy: Boolean, selecting: Boolean, working: Boolean });
 defineEmits(['select']);
 const identified = computed(() => props.instance.status === 'identified'
@@ -47,11 +47,7 @@ const selectable = computed(() => props.instance.role === 'main' && props.instan
         <div><dt>关联 PID</dt><dd class="mono">{{ processes.join(' / ') }}</dd></div>
         <div v-if="instance.parentPid"><dt>父进程</dt><dd class="mono">{{ instance.parentPid }}</dd></div>
         <div v-if="instance.executablePath" class="detail-wide"><dt>路径</dt><dd class="mono">{{ instance.executablePath }}</dd></div>
-        <div v-if="identified" class="detail-wide"><dt>识别依据</dt><dd>{{ formatEvidence(instance.account.evidence) || sourceLabel(instance.account.source) }}</dd></div>
       </dl>
-      <div v-if="!identified" class="unidentified-note">{{ instance.status === 'ambiguous' ? '存在多项账号线索，尚未确认。' : '暂未取得可确认的账号信息。' }}</div>
-      <div v-if="instance.role !== 'main'" class="unidentified-note">主进程身份待确认，未计入微信实例数。</div>
-      <ul v-if="!identified && instance.candidates?.length" class="candidate-list"><li v-for="(candidate, index) in instance.candidates" :key="`${candidate.id}-${index}`"><strong>{{ candidate.id }}</strong><span>{{ sourceLabel(candidate.source) }}</span><p v-if="candidate.evidence">{{ formatEvidence(candidate.evidence) }}</p></li></ul>
     </div>
   </details>
   <div class="instance-actions"><button class="button button-secondary instance-work-button" :disabled="!selectable || selectionBusy" @click="$emit('select', instance)">{{ selecting ? '处理中' : working ? '进入工作' : '设为工作' }}</button></div>

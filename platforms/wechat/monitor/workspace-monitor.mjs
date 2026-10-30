@@ -29,12 +29,22 @@ export function createWorkspaceMonitor({
   const seenCrashEvents = new Set();
   const childDisposers = new Set();
   const getState = () => structuredClone({ ...state, logStatus: logger.getStatus() });
+  // A runtime captures this once at creation; identity hashes alone cannot distinguish reselections.
+  const captureEventScope = () => Object.freeze({ sessionRef: reference, generation });
   const emit = () => { try { onState(getState()); } catch { /* UI observers never own monitoring. */ } };
   const stopTimer = () => { clearTimeout(timer); timer = undefined; };
-  const event = async (type, details = {}) => {
-    const eventGeneration = generation;
-    const logged = await logger.record(type, { ...details, sessionRef: reference });
-    if (!logged && generation === eventGeneration && state.status === 'active') interrupt({ code: 'WORKSPACE_LOG_UNAVAILABLE', message: '运行日志暂不可写，已暂停工作微信。' });
+  const event = async (type, details = {}, scope) => {
+    const source = scope === undefined ? captureEventScope() : scope;
+    if (!source || !Number.isSafeInteger(source.generation) || source.generation < 0
+      || !(source.sessionRef === null || (typeof source.sessionRef === 'string' && /^[a-f0-9]{24}$/.test(source.sessionRef)))) {
+      throw Object.assign(new Error('运行事件归属无效。'), { code: 'WORKSPACE_EVENT_SCOPE_INVALID' });
+    }
+    // Copy before awaiting so even a mutable caller object cannot change event ownership mid-write.
+    const { generation: eventGeneration, sessionRef: eventReference } = source;
+    const logged = await logger.record(type, { ...details, sessionRef: eventReference });
+    if (!logged && generation === eventGeneration && reference === eventReference && state.status === 'active') {
+      interrupt({ code: 'WORKSPACE_LOG_UNAVAILABLE', message: '运行日志暂不可写，已暂停工作微信。' });
+    }
     return logged;
   };
   async function collectCrashEvents(selected, currentGeneration, sessionRef) {
@@ -169,7 +179,7 @@ export function createWorkspaceMonitor({
   }
   const releaseHost = observeHost({ processRef, logger, reference: () => reference });
   return {
-    select, restore, checkNow, getState,
+    select, restore, checkNow, getState, captureEventScope,
     recordEvent: event,
     trackChild(child, operation = 'native') {
       if (disposed) throw Object.assign(new Error('微信跟踪已停止。'), { code: 'MONITOR_DISPOSED' });

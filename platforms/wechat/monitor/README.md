@@ -10,6 +10,7 @@
 - `await restore()`：读取本地选择，仅在 PID、原生创建时间和账号全部一致时恢复；不会把相同账号的新 PID 自动选为工作微信。
 - `trackChild(child, operation)`：监听原生桥接子进程，返回移除监听函数；异常退出立即撤销工作能力，正常请求完成仅记日志。
 - `recordEvent(type, details)`：仅接受固定事件名与允许的诊断字段，不传入消息、联系人或原始响应。
+- `captureEventScope()`：创建运行组件时捕获不可变的会话引用与选择代次，随后始终传给 `recordEvent(type, details, scope)`。旧组件迟到事件按原会话记录；旧代次写日志失败不会暂停新工作会话，同一微信重新选择也按代次隔离。
 - `await stop()`：停止跟踪和工作能力，持久化停止意图。
 - `await dispose()`：释放当前宿主资源，保留原选择供重启时重新核对。
 

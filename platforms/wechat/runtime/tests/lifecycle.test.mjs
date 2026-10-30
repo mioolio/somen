@@ -18,7 +18,7 @@ test('quiescing a runtime retains its independent worker and never sends a kill'
       ? { disposed: false, retained: true, quiesced: true } : { ready: true } }));
   };
   const runtime = await createNativeRuntime({ binding: {}, forkImpl: () => child });
-  assert.deepEqual(await runtime.dispose(), { disposed: false, retained: true, quiesced: true });
+  assert.deepEqual(await runtime.dispose(), { disposed: false, retained: true, quiesced: true, remoteAcknowledged: true });
   assert.equal(unreferenced, true);
   assert.equal(channelUnreferenced, true);
   assert.equal(killed, false);

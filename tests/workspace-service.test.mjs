@@ -72,14 +72,30 @@ test('events from a disposed runtime cannot revoke a replacement workspace', asy
   previousEvent({ type: 'native.worker-exit', code: 0 });
   assert.equal(service.getState().capabilities.text, true);
 });
-test('a retained runtime leaves sending disabled when switching is rejected', async t => {
-  const { service, runtime, instance } = await fixture(t);
-  await service.select(identity); await service.readContacts();
-  runtime.dispose = async () => ({ retained: true });
-  instance({ ...current, pid: current.pid + 1 });
-  await assert.rejects(service.select({ ...identity, pid: identity.pid + 1 }));
-  assert.equal(service.getState().capabilities.text, false);
-});
+for (const cleanup of ['legacy-retained', 'failed', 'rejected', 'unresponsive']) {
+  test(`selection succeeds while previous native cleanup is ${cleanup}`, { timeout: 3000 }, async t => {
+    const { service, runtime, instance, calls } = await fixture(t);
+    await service.select(identity); await service.readContacts();
+    const previousEvent = calls.events[0];
+    runtime.dispose = () => {
+      if (cleanup === 'failed') throw Object.assign(new Error('fixture cleanup failure'), { code: 'FIXTURE_IPC_FAILED' });
+      if (cleanup === 'rejected') return Promise.reject(Object.assign(new Error('fixture cleanup rejection'), { code: 'FIXTURE_IPC_FAILED' }));
+      return cleanup === 'unresponsive' ? new Promise(() => {}) : Promise.resolve({ retained: true });
+    };
+    instance({ ...current, pid: current.pid + 1 });
+    const next = await service.select({ ...identity, pid: identity.pid + 1 });
+    assert.equal(next.binding.pid, identity.pid + 1);
+    assert.equal(next.status, 'active');
+    assert.equal(next.target, null);
+    assert.deepEqual(next.contacts, []);
+    assert.equal(next.capabilities.text, false);
+    assert.equal(next.diagnostics.retainedRuntimeCount, 1);
+    previousEvent({ type: 'native.worker-exit', code: 1 });
+    assert.equal(service.getState().status, 'active');
+    await assert.rejects(service.sendText({ requestId: 'fixture-after-switch', content: 'fixture' }));
+    assert.equal(calls.sent.length, 0);
+  });
+}
 test('selecting the same active instance is idempotent and keeps its work context', async t => {
   const { service, calls } = await fixture(t);
   await service.select(identity); await service.readContacts();
@@ -89,6 +105,58 @@ test('selecting the same active instance is idempotent and keeps its work contex
   assert.equal(selected.capabilities.text, true);
   assert.equal(calls.created, 1);
   assert.equal(calls.disposed, 0);
+});
+
+test('reselecting the same binding permits navigation without clearing an unknown send outcome', async t => {
+  const { service, calls, runtime } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  runtime.sendText = async input => { calls.sent.push(input); return { status: 'unknown' }; };
+  await service.sendText({ requestId: 'fixture-unknown-once', content: 'fixture' });
+  const previous = service.getState();
+  const selected = await service.select(identity);
+  assert.equal(selected.status, 'error');
+  assert.deepEqual(selected.lastReceipt, previous.lastReceipt);
+  assert.deepEqual(selected.target, previous.target);
+  assert.equal(selected.capabilities.text, false);
+  assert.equal(calls.created, 1);
+  assert.equal(calls.disposed, 0);
+  await assert.rejects(service.sendText({ requestId: 'fixture-unknown-again', content: 'fixture' }), { code: 'SEND_OUTCOME_UNKNOWN' });
+  assert.equal(calls.sent.length, 1);
+});
+
+test('switching away and back cannot clear an unknown result for that exact binding', async t => {
+  const { service, calls, runtime, instance } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  runtime.sendText = async input => { calls.sent.push(input); return { status: 'unknown' }; };
+  await service.sendText({ requestId: 'fixture-unknown-before-switch', content: 'fixture' });
+  const previous = service.getState().lastReceipt;
+  instance({ ...current, pid: current.pid + 1 });
+  assert.equal((await service.select({ ...identity, pid: identity.pid + 1 })).status, 'active');
+  instance(current);
+  const selected = await service.select(identity);
+  assert.equal(selected.binding.pid, identity.pid);
+  assert.equal(selected.status, 'error');
+  assert.deepEqual(selected.lastReceipt, previous);
+  assert.equal(selected.target, null);
+  await assert.rejects(service.readContacts(), { code: 'SEND_OUTCOME_UNKNOWN' });
+  await assert.rejects(service.sendText({ requestId: 'fixture-unknown-after-switch', content: 'fixture' }), { code: 'SEND_OUTCOME_UNKNOWN' });
+  assert.equal(calls.sent.length, 1);
+  assert.equal(calls.created, 1);
+});
+
+test('reselecting a verified existing binding restores monitoring without replacing its native context', async t => {
+  const { service, calls, instance } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  instance({ ...current, account: { ...current.account, verified: false } });
+  await assert.rejects(service.sendText({ requestId: 'fixture-identity-paused', content: 'fixture' }));
+  assert.equal(service.getState().status, 'lost');
+  instance(current);
+  const selected = await service.select(identity);
+  assert.equal(selected.status, 'active');
+  assert.equal(selected.capabilities.text, true);
+  assert.equal(calls.created, 1);
+  assert.equal(calls.disposed, 0);
+  assert.equal(calls.sent.length, 0);
 });
 test('a quiesced native owner stays retained while selecting a different work instance', async t => {
   const { service, calls, runtime, instance } = await fixture(t);

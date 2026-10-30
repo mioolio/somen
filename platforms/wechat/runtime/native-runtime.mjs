@@ -11,13 +11,16 @@ export async function createNativeRuntime({ binding, onEvent = () => {}, allowVa
     windowsHide: true, detached: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], serialization: 'json', execArgv: [],
   });
   const pending = new Map();
-  let nextId = 0, stopped = false, blocked = false;
+  let nextId = 0, stopped = false, blocked = false, targetTerminated = false, retirement;
   const emit = event => { try { onEvent(event); } catch { /* Diagnostics cannot interrupt native work. */ } };
   // Never forward arbitrary dependency output: it could contain identifiers.
   child.stdout.on('data', () => {});
   child.stderr.on('data', () => emit({ type: 'native.worker-stderr' }));
   child.on('message', message => {
-    if (message.event) { emit(message.event); return; }
+    if (message.event) {
+      if (message.event.type === 'native.detached' && message.event.reason === 'process-terminated') targetTerminated = true;
+      emit(message.event); return;
+    }
     const request = pending.get(message.id);
     if (!request) return;
     clearTimeout(request.timer); pending.delete(message.id);
@@ -69,11 +72,31 @@ export async function createNativeRuntime({ binding, onEvent = () => {}, allowVa
     sendText: input => call('sendText', input),
     sendImage: input => call('sendImage', input),
     status: async () => ({ ...await call('status'), transportBlocked: blocked }),
-    async dispose() {
-      if (stopped) return { disposed: true };
-      const result = await call('dispose');
-      if (result.retained) { child.unref(); child.channel?.unref(); emit({ type: 'native.worker-retained' }); }
-      return result;
+    dispose() {
+      // The caller's lease ends synchronously, independent of the worker's code
+      // version or IPC acknowledgement. Retained callback owners do not imply
+      // that this business interface may continue sending.
+      blocked = true;
+      if (retirement) return retirement;
+      retirement = (async () => {
+        try {
+          if (stopped || !child.connected) return { disposed: targetTerminated, retained: !targetTerminated,
+            quiesced: true, remoteAcknowledged: false, code: 'NATIVE_WORKER_DISCONNECTED' };
+          const result = await call('dispose');
+          // Legacy workers can return retained without quiesced, or report a
+          // generic detach as disposed. Only target termination proves release.
+          return { ...result, disposed: targetTerminated && result?.disposed === true,
+            retained: !(targetTerminated && result?.disposed === true), quiesced: true, remoteAcknowledged: true };
+        } catch (error) {
+          emit({ type: 'native.retirement-unconfirmed', code: error?.code || 'NATIVE_IPC_FAILED' });
+          return { disposed: false, retained: true, quiesced: true, remoteAcknowledged: false,
+            code: error?.code || 'NATIVE_IPC_FAILED' };
+        } finally {
+          try { child.unref(); child.channel?.unref(); } catch { /* The worker may already have exited. */ }
+          if (!targetTerminated) emit({ type: 'native.worker-retained' });
+        }
+      })();
+      return retirement;
     },
   };
 }
