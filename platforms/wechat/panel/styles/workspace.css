@@ -1,0 +1,46 @@
+/* 边界：工作微信页面布局、账号选择、联系人和运行事件，不覆盖实例页或宿主。 */
+.wx-workspace { min-width: 0; }
+.wx-work-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
+.wx-work-heading h1 { font-size: 27px; font-weight: 650; letter-spacing: -.6px; margin: 0; }
+.wx-work-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-muted); padding: 7px 0 7px 8px; }
+.wx-work-back:hover { color: var(--color-primary); }
+.wx-work-selector, .wx-work-contacts, .wx-work-composer, .wx-work-emoticons, .wx-work-events { min-width: 0; padding: 22px; }
+.wx-work-section-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 19px; min-height: 20px; }
+.wx-work-section-title h2 { font-size: 14px; font-weight: 600; margin: 0; }
+.wx-work-count { color: var(--color-muted); font-size: 12px; font-weight: 400; margin-left: 4px; }
+.wx-work-current { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; margin-bottom: 16px; min-width: 0; }
+.wx-work-current strong { font-size: 14px; font-weight: 550; overflow-wrap: anywhere; }
+.wx-work-current > span { color: var(--color-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.wx-work-current:last-child { margin-bottom: 0; }
+.wx-work-switch { margin-left: auto; }
+.wx-work-status { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #936e32; white-space: nowrap; }
+.wx-work-status.active { color: #21815e; }
+.wx-work-picker { display: flex; align-items: center; gap: 10px; }
+.wx-work-picker select { flex: 1; min-width: 0; height: 42px; padding: 0 32px 0 12px; font: inherit; font-size: 13px; color: var(--color-text); background: #fafbfd; border: 1px solid #dfe6ef; border-radius: 8px; }
+.wx-work-picker select:focus-visible { outline: 3px solid #3971ee60; outline-offset: 1px; }
+.wx-work-icon-button { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; border: 1px solid var(--color-border); border-radius: 8px; background: white; color: var(--color-muted); min-width: 36px; height: 36px; padding: 7px; }
+.wx-work-icon-button:hover:not(:disabled) { color: var(--color-primary); border-color: #b2c7f6; }
+.wx-work-text-button { display: inline-flex; align-items: center; border: 0; background: transparent; color: var(--color-primary); padding: 4px 0 4px 6px; font-size: 12px; white-space: nowrap; }
+.wx-work-grid { display: grid; grid-template-columns: minmax(230px, .85fr) minmax(0, 1.65fr); gap: 20px; margin-top: 20px; align-items: start; }
+.wx-work-left, .wx-work-right { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.wx-work-input { width: 100%; min-width: 0; border: 1px solid #dfe6ef; border-radius: 7px; height: 36px; padding: 0 10px; color: var(--color-text); font-size: 12px; }
+.wx-work-input::placeholder { color: var(--color-muted); }
+.wx-work-contact-list { padding: 0; list-style: none; margin: 0 -3px; max-height: 420px; overflow-y: auto; }
+.wx-work-input + .wx-work-contact-list { margin-top: 16px; }
+.wx-work-contact-list > li { display: flex; align-items: center; gap: 10px; padding: 12px 3px; border-bottom: 1px solid #edf1f7; }
+.wx-work-contact-list > li:last-child { border-bottom: 0; }
+.wx-work-contact-avatar { display: grid; place-items: center; width: 33px; height: 33px; flex-shrink: 0; background: #eef6f2; color: #4b987d; border-radius: 9px; }
+.wx-work-contact-list li > div { min-width: 0; flex: 1; }
+.wx-work-contact-list strong { display: block; font-size: 13px; font-weight: 550; overflow-wrap: anywhere; }
+.wx-work-contact-list small { display: block; font-size: 11px; color: var(--color-muted); margin-top: 5px; overflow-wrap: anywhere; }
+.wx-work-selected { display: flex; align-items: center; gap: 3px; color: #21815e; font-size: 11px; white-space: nowrap; }
+.wx-work-empty { font-size: 12px; color: var(--color-muted); line-height: 1.8; padding: 18px 0; }
+.wx-work-alert { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 16px; margin-bottom: 18px; border: 1px solid #f1dfd5; border-radius: 9px; background: #fff7f2; color: #8a603f; font-size: 13px; overflow-wrap: anywhere; }
+.wx-work-initial-loading { display: grid; place-items: center; min-height: 160px; color: var(--color-muted); }
+.wx-work-check-time { color: var(--color-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.wx-work-events ul { list-style: none; padding: 0; margin: 0; }
+.wx-work-events li { display: flex; align-items: baseline; gap: 12px; font-size: 12px; color: #53647b; line-height: 1.7; padding: 5px 0; overflow-wrap: anywhere; }
+.wx-work-events time { color: var(--color-muted); font-size: 11px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+@media (max-width: 1150px) { .wx-work-grid { grid-template-columns: minmax(0, 1fr); } .wx-work-left { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 760px) { .wx-work-heading h1 { font-size: 22px; } .wx-work-heading { margin-bottom: 22px; } .wx-work-left { display: flex; } .wx-work-grid, .wx-work-left, .wx-work-right { gap: 16px; } .wx-work-selector, .wx-work-contacts, .wx-work-composer, .wx-work-emoticons, .wx-work-events { padding: 18px; } }
+@media (max-width: 360px) { .wx-work-picker { gap: 7px; flex-wrap: wrap; } .wx-work-picker select { flex-basis: 100%; } .wx-work-picker > .button { flex: 1; } .wx-work-selected { font-size: 10px; } .wx-work-contact-list { margin-left: 0; margin-right: 0; } .wx-work-contact-list > li { flex-wrap: wrap; } }

@@ -6,4 +6,10 @@ export default [
     component: () => import('./pages/InstancesPage.vue'),
     meta: { title: '微信多进程' },
   },
+  {
+    path: '/wechat/workspace',
+    name: 'wechat.workspace',
+    component: () => import('./pages/WorkspacePage.vue'),
+    meta: { title: '工作微信' },
+  },
 ];

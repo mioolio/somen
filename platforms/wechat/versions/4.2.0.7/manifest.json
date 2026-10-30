@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "version": "4.2.0.7",
+  "architecture": "x64",
+  "dllSha256": "9beb1051449e768417d770915646815a5bd1899cc2779f758069820794358ee0",
+  "agents": {
+    "contacts": [
+      "contacts.js"
+    ],
+    "send": [
+      "send-context.js",
+      "send-request.js",
+      "send-text.js",
+      "send-image.js",
+      "send-exports.js"
+    ]
+  },
+  "nativeValidation": {
+    "contacts": true,
+    "text": true,
+    "image": true
+  },
+  "notes": "ABI derived from supplied WXcc reference; SOMEN teardown regression tracked separately. Session remains resident until client exit.",
+  "capabilities": {
+    "contacts": true,
+    "text": true,
+    "image": true,
+    "sticker": false,
+    "emojiSearch": false,
+    "emojiAdd": false
+  }
+}

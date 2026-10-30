@@ -28,7 +28,7 @@ namespace Somen.Wechat
 
     public static class CurrentAccount
     {
-        // Version-specific bytes and offsets belong exclusively to profiles/*.json.
+        // Version-specific bytes and offsets belong exclusively to versions/<version>/identity.json.
         private static readonly Dictionary<string, string> Hashes = new Dictionary<string, string>();
 
         private static string Hash(string path)

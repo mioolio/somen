@@ -1,0 +1,29 @@
+{
+  "boundary": "Data-only binary identity profile; independently confirmed offline and by read-only current-owner validation. No execution or messaging capability.",
+  "schemaVersion": 1,
+  "reader": "current-manager-msvc-string-v1",
+  "moduleName": "Weixin.dll",
+  "version": "4.2.0.11",
+  "architecture": "x64",
+  "dllSha256": "745cdf2955fa5128cdb00c056c97571156a5f107406a9bb15ac0754f3246b201",
+  "managerPointerRva": "0xbd0ce30",
+  "managerVtableRva": "0x9054b98",
+  "ownerVtableRva": "0x90d4f88",
+  "getterRva": "0x469a0",
+  "getterSlotOffset": "0x60",
+  "ownerOffset": "0x68",
+  "controlOffset": "0x70",
+  "selfOffset": "0x48",
+  "strongCountOffset": "0x8",
+  "codeChecks": [
+    {
+      "rva": "0x47220",
+      "bytes": "56 48 83 ec 40 48 89 ce 48 8b 05 91 5c 44 0b 48 31 e0 48 89 44 24 38 48 8b 0d f2 5b cc 0b 48 8b 01 48 8d 54 24 20 ff 50 60"
+    },
+    {
+      "rva": "0x469a0",
+      "bytes": "48 89 d0 48 8b 51 70 48 85 d2 74 14 f0 ff 42 08 48 8b 51 70 48 8b 49 68 48 89 08 48 89 50 08 c3 31 d2 48 8b 49 68 48 89 08 48 89 50 08 c3"
+    }
+  ],
+  "research": "2026-10-30: getter byte match and RIP-relative manager derivation independently checked; manager and owner RTTI/COL/vtables compared offline. Live read-only validation matched the user-selected identity, exact process creation time, types, reference count, code bytes and stable double-read. No account value is stored here."
+}

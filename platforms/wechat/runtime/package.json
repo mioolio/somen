@@ -1,0 +1,13 @@
+{
+  "name": "@somen/wechat-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "os": [
+    "win32"
+  ],
+  "dependencies": {
+    "frida": "17.20.0",
+    "sharp": "0.35.5"
+  }
+}

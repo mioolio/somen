@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 1,
+  "scope": "Offline installed DLL comparison only. No attach or execution on this version.",
+  "fromVersion": "4.2.0.7",
+  "toVersion": "4.2.0.11",
+  "dllSha256": "745cdf2955fa5128cdb00c056c97571156a5f107406a9bb15ac0754f3246b201",
+  "runtimeVerified": false,
+  "normalizedComparison": "Register operands, structure offsets and constants are retained. Only RIP-relative data displacements and direct branch/call destinations are normalized.",
+  "functionMappings": [
+    {
+      "oldRva": "0x2010",
+      "newRva": "0x2010",
+      "oldSize": 77,
+      "newSize": 77,
+      "oldInstructionCount": 22,
+      "newInstructionCount": 22,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "a29e6488a0ac409a1ca142928af5c00ebbb8d4a36bbd059f991c60e1abf38eb9",
+      "newFirst32Bytes": "48 83 ec 28 48 8b 41 18 48 83 f8 10 72 34 48 8b 09 48 8d 50 01 48 81 fa 00 10 00 00 72 1b 4c 8b"
+    },
+    {
+      "oldRva": "0x2060",
+      "newRva": "0x2060",
+      "oldSize": 55,
+      "newSize": 55,
+      "oldInstructionCount": 20,
+      "newInstructionCount": 20,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "5b1ccbab14f3bb18d917403b882d0a2f41a0fd5ac59a2923884bc2ac24438db4",
+      "newFirst32Bytes": "56 48 83 ec 20 48 8b 71 08 48 85 f6 74 23 f0 ff 4e 08 75 1d 48 8b 06 48 89 f1 ff 10 f0 ff 4e 0c"
+    },
+    {
+      "oldRva": "0x7a60",
+      "newRva": "0x7a60",
+      "oldSize": 84,
+      "newSize": 84,
+      "oldInstructionCount": 23,
+      "newInstructionCount": 23,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "3fd0441f17b7a66a8bcb56eca9b278c0eecd83c3124400571c974941bd26b193",
+      "newFirst32Bytes": "48 83 ec 28 48 8b 41 18 48 83 f8 08 72 3b 48 8b 09 48 8d 14 45 02 00 00 00 48 81 fa 00 10 00 00"
+    },
+    {
+      "oldRva": "0x45d10",
+      "newRva": "0x45d10",
+      "oldSize": 8,
+      "newSize": 8,
+      "oldInstructionCount": 2,
+      "newInstructionCount": 2,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "f86a33eeab796e447b32d311fa63a373613683b9f5d859d2a0e603a8143eb976",
+      "newFirst32Bytes": "48 8b 05 19 71 cc 0b c3"
+    },
+    {
+      "oldRva": "0x47220",
+      "newRva": "0x47220",
+      "oldSize": 92,
+      "newSize": 92,
+      "oldInstructionCount": 25,
+      "newInstructionCount": 25,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "943e07898257d244f49af9694aea614e8344dc8b9bc74e4e7ed8714e6b28550b",
+      "newFirst32Bytes": "56 48 83 ec 40 48 89 ce 48 8b 05 91 5c 44 0b 48 31 e0 48 89 44 24 38 48 8b 0d f2 5b cc 0b 48 8b"
+    },
+    {
+      "oldRva": "0x47310",
+      "newRva": "0x47310",
+      "oldSize": 41,
+      "newSize": 41,
+      "oldInstructionCount": 10,
+      "newInstructionCount": 10,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "9b5c07285bcf9310496e5bed8d760ea2ef26d66ce717bdcab374d0835beaabde",
+      "newFirst32Bytes": "48 89 d0 48 8b 91 18 03 00 00 48 85 d2 74 1a f0 ff 42 08 48 8b 91 18 03 00 00 48 8b 89 10 03 00"
+    },
+    {
+      "oldRva": "0x88ad0",
+      "newRva": "0x88ad0",
+      "oldSize": 190,
+      "newSize": 190,
+      "oldInstructionCount": 58,
+      "newInstructionCount": 58,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "9a36637cf99b9b2aba4729db9239b13e32ff59455e527b9c21956f8682b44547",
+      "newFirst32Bytes": "41 57 41 56 56 57 53 48 83 ec 20 48 89 d7 48 89 ce 0f 57 c0 0f 11 41 10 0f 11 01 48 89 d1 e8 8d"
+    },
+    {
+      "oldRva": "0x10dcd0",
+      "newRva": "0x10dcd0",
+      "oldSize": 41,
+      "newSize": 41,
+      "oldInstructionCount": 14,
+      "newInstructionCount": 14,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "afbbff6614d0c757911ec66545185d860dfb8fb08a5efc7ffdcec76b661b8343",
+      "newFirst32Bytes": "55 48 83 ec 30 48 8d 6c 24 30 48 c7 45 f8 fe ff ff ff 48 8b 09 48 85 c9 74 09 f0 ff 09 75 04 ff"
+    },
+    {
+      "oldRva": "0x30fdb0",
+      "newRva": "0x311990",
+      "oldSize": 521,
+      "newSize": 521,
+      "oldInstructionCount": 121,
+      "newInstructionCount": 121,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "ccde36cd9fb57c66577fc360ccf6c82b363a5ab4a4788f15064f5d36829801b4",
+      "newFirst32Bytes": "55 41 57 41 56 56 57 53 48 81 ec c8 01 00 00 48 8d ac 24 80 00 00 00 48 c7 85 40 01 00 00 fe ff"
+    },
+    {
+      "oldRva": "0x382b50",
+      "newRva": "0x384730",
+      "oldSize": 32,
+      "newSize": 32,
+      "oldInstructionCount": 10,
+      "newInstructionCount": 10,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "b9a2280c2c92b01d11fd78ef04d41b8b53fa4b6727e86c4db08acd3e5c6b20ed",
+      "newFirst32Bytes": "48 89 d0 48 8b 51 30 48 85 d2 74 14 f0 ff 42 08 48 8b 51 30 48 8b 49 28 48 89 08 48 89 50 08 c3"
+    },
+    {
+      "oldRva": "0x382bc0",
+      "newRva": "0x3847a0",
+      "oldSize": 247,
+      "newSize": 247,
+      "oldInstructionCount": 69,
+      "newInstructionCount": 69,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "dfbbb7cb0c7cb3fc53e13d8c03cd3deafcbbbae24b8c9b6ffdfca13f5a8a94b6",
+      "newFirst32Bytes": "56 57 53 48 83 ec 40 48 89 d6 48 89 cf 48 8b 05 0c 87 10 0b 48 31 e0 48 89 44 24 38 48 83 b9 60"
+    },
+    {
+      "oldRva": "0x473e60",
+      "newRva": "0x479bd0",
+      "oldSize": 285,
+      "newSize": 285,
+      "oldInstructionCount": 83,
+      "newInstructionCount": 83,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "edb90d110c83097858bfa5bfd53ea5d28705d34e6aa3b99b9da268ab7db7eefe",
+      "newFirst32Bytes": "55 56 57 48 81 ec 90 00 00 00 48 8d ac 24 80 00 00 00 0f 29 75 00 48 c7 45 f8 fe ff ff ff 48 89"
+    },
+    {
+      "oldRva": "0x49e370",
+      "newRva": "0x4a40e0",
+      "oldSize": 184,
+      "newSize": 184,
+      "oldInstructionCount": 57,
+      "newInstructionCount": 57,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "a324c627722154df4931be4c7fc8db9b4ade924c91e38cb449181cd1993ac9ec",
+      "newFirst32Bytes": "56 57 48 83 ec 28 8b 05 d4 a8 86 0b 65 48 8b 14 25 58 00 00 00 48 8b 04 c2 48 8b 90 f0 01 00 00"
+    },
+    {
+      "oldRva": "0x6fe980",
+      "newRva": "0x7046f0",
+      "oldSize": 136,
+      "newSize": 136,
+      "oldInstructionCount": 39,
+      "newInstructionCount": 39,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "6fcf317039ad818563f504bd7e024b49806c17c92216a44ff3e283f9b5d88232",
+      "newFirst32Bytes": "56 57 48 83 ec 38 48 89 d6 48 8d 05 b8 2d 9d 08 48 89 44 24 30 0f 28 05 54 5b 91 08 0f 29 44 24"
+    },
+    {
+      "oldRva": "0xa4a970",
+      "newRva": "0xa55060",
+      "oldSize": 492,
+      "newSize": 492,
+      "oldInstructionCount": 125,
+      "newInstructionCount": 125,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "d8e5e2de894ddcbc5f340b9a1eda46ac6b88a65787f621756992f049038881b7",
+      "newFirst32Bytes": "55 56 57 53 48 81 ec 58 01 00 00 48 8d ac 24 80 00 00 00 0f 29 b5 c0 00 00 00 48 c7 85 b8 00 00"
+    },
+    {
+      "oldRva": "0x103fce0",
+      "newRva": "0x1049bf0",
+      "oldSize": 2854,
+      "newSize": 2854,
+      "oldInstructionCount": 704,
+      "newInstructionCount": 704,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "e0fb391d5229fcedb8f1594f85063e8499c7e6f54865f69a515e1aff0e48225c",
+      "newFirst32Bytes": "55 41 57 41 56 41 54 56 57 53 48 81 ec f0 05 00 00 48 8d ac 24 80 00 00 00 0f 29 b5 60 05 00 00"
+    },
+    {
+      "oldRva": "0x2c7ddd0",
+      "newRva": "0x2cc2350",
+      "oldSize": 3927,
+      "newSize": 3927,
+      "oldInstructionCount": 878,
+      "newInstructionCount": 878,
+      "normalizedInstructionsEqual": false,
+      "normalizedSimilarity": 0.9954441913439636,
+      "newFunctionSha256": "e264ffef25160083634851432d45e31b4866f313c9e0daaa5a30d278a156fa3b",
+      "newFirst32Bytes": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 ec 78 05 00 00 48 8d ac 24 80 00 00 00 0f 29 b5 e0 04"
+    },
+    {
+      "oldRva": "0x570db60",
+      "newRva": "0x571fd20",
+      "oldSize": 3406,
+      "newSize": 3406,
+      "oldInstructionCount": 782,
+      "newInstructionCount": 782,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "0e657ec593665876cfdea53a1bcf88715ecd68c0254e96ea30c89bac59e3fb68",
+      "newFirst32Bytes": "55 41 57 41 56 41 55 41 54 56 57 53 48 81 ec 18 03 00 00 48 8d ac 24 80 00 00 00 0f 29 b5 80 02"
+    },
+    {
+      "oldRva": "0x7690f28",
+      "newRva": "0x76a5428",
+      "oldSize": 7,
+      "newSize": 7,
+      "oldInstructionCount": 2,
+      "newInstructionCount": 2,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "88cbef78dfd1e73cbaf10cd19397733507c5a9b0c7c9ddd1f715501666a27e00",
+      "newFirst32Bytes": "33 d2 e9 41 00 00 00"
+    },
+    {
+      "oldRva": "0x7690f50",
+      "newRva": "0x76a5450",
+      "oldSize": 31,
+      "newSize": 31,
+      "oldInstructionCount": 9,
+      "newInstructionCount": 9,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "edb6e162dc0a27d7485c6e50670d1162bed10258b819c7847f796605a3246723",
+      "newFirst32Bytes": "48 83 ec 28 83 69 4c 01 75 0e 83 49 48 ff 48 83 c1 10 ff 15 08 88 8f 02 33 c0 48 83 c4 28 c3"
+    },
+    {
+      "oldRva": "0x7690f70",
+      "newRva": "0x76a5470",
+      "oldSize": 305,
+      "newSize": 305,
+      "oldInstructionCount": 92,
+      "newInstructionCount": 92,
+      "normalizedInstructionsEqual": true,
+      "normalizedSimilarity": 1.0,
+      "newFunctionSha256": "02ddf25d2d3051002853ccd42f43773d82b872f875b5fdce6aab1fe95932a84d",
+      "newFirst32Bytes": "48 89 5c 24 10 48 89 6c 24 18 48 89 74 24 20 57 48 83 ec 40 48 8b 05 35 7a de 03 48 33 c4 48 89"
+    }
+  ],
+  "rvaMappings": {
+    "0x30fdb0": "0x311990",
+    "0x49e370": "0x4a40e0",
+    "0x382b50": "0x384730",
+    "0x473e60": "0x479bd0",
+    "0x103fce0": "0x1049bf0",
+    "0x382bc0": "0x3847a0",
+    "0x6fe980": "0x7046f0",
+    "0x570db60": "0x571fd20",
+    "0x2c7ddd0": "0x2cc2350",
+    "0xa4a970": "0xa55060",
+    "0x7690f28": "0x76a5428",
+    "0x7690f50": "0x76a5450",
+    "0x7690f70": "0x76a5470",
+    "0x90c0c78": "0x90d4f88",
+    "0x9264988": "0x927a498",
+    "0x926af08": "0x9280a38",
+    "0x9f87e78": "0x9f9d4b8",
+    "0x9f88148": "0x9f9d788",
+    "0x9f88630": "0x9f9dc70",
+    "0x9f887e0": "0x9f9de20",
+    "0x5702810": "0x57149d0",
+    "0x1da5fc0": "0x1daeb20",
+    "0x17c76e0": "0x17cf150"
+  },
+  "ambiguityResolution": [
+    {
+      "oldFactoryVtable": "0x90cc0a8",
+      "newFactoryVtable": "0x90e03a8",
+      "selectedGetter": "0x479bd0",
+      "proof": "Unique 24-byte encoded RTTI type-name match, COL signature/offset/self-RVA checks, and unique vtable pointer; getter RIP LEA points at this vtable."
+    },
+    {
+      "oldFactoryVtable": "0x90c3198",
+      "newFactoryVtable": "0x90d74b8",
+      "selectedGetter": "0x7046f0",
+      "proof": "Same encoded RTTI/COL/vtable identity proof; getter RIP LEA points at this unique vtable."
+    }
+  ],
+  "imageDifferences": [
+    {
+      "oldInstruction": "0x2c7df13",
+      "newInstruction": "0x2cc2493",
+      "oldImmediate": "0xb51",
+      "newImmediate": "0xb57"
+    },
+    {
+      "oldInstruction": "0x2c7e0b6",
+      "newInstruction": "0x2cc2636",
+      "oldImmediate": "0xb4c",
+      "newImmediate": "0xb52"
+    },
+    {
+      "oldInstruction": "0x2c7e42a",
+      "newInstruction": "0x2cc29aa",
+      "oldImmediate": "0xb5a",
+      "newImmediate": "0xb60"
+    },
+    {
+      "oldInstruction": "0x2c7e7a2",
+      "newInstruction": "0x2cc2d22",
+      "oldImmediate": "0xb69",
+      "newImmediate": "0xb6f"
+    }
+  ],
+  "imageDifferenceInterpretation": "The only four normalized instruction changes are the immediate at logging argument [rsp+0x28], each increased by six. Each is adjacent to the same byte-identical encoded source-file identifier. Image input/output field offsets, 0x40 result ownership and 878-instruction control shape are unchanged. This supports static ABI compatibility, not runtime delivery proof.",
+  "lifecycleLimit": "A prior SOMEN 4.2.0.7 read/dispose caused a crash in ntdll.__chkstk; proactive script unload/detach has been removed. The exact crash cause remains unproved."
+}

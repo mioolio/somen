@@ -32,7 +32,7 @@ $profiles = @()
 if ($nativeReady) {
     try {
         . (Join-Path $PSScriptRoot 'load-profiles.ps1')
-        $loaded = Import-AccountProfiles -Directory (Join-Path $PSScriptRoot 'profiles')
+        $loaded = Import-AccountProfiles -Directory (Join-Path $PSScriptRoot '../versions')
         $profiles = [Somen.Wechat.AccountProfile[]]$loaded.profiles
         foreach ($warning in $loaded.warnings) { $warnings.Add($warning) }
     } catch {

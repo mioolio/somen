@@ -1,0 +1,30 @@
+{
+  "boundary": "Data-only locations for installed Qt resources and built-in text-token mappings; contains no copied image or account data.",
+  "schemaVersion": 1,
+  "version": "4.2.0.11",
+  "reader": "qt-rcc-v3-builtin-emoji-v1",
+  "dllSha256": "745cdf2955fa5128cdb00c056c97571156a5f107406a9bb15ac0754f3246b201",
+  "rcc": {
+    "version": 3,
+    "treeRva": "0x87fc080",
+    "nodeCount": 154,
+    "nameRva": "0x87fab30",
+    "nameBytes": 5450,
+    "dataRva": "0x86ee460",
+    "dataBytes": 1099472,
+    "expectedFileCount": 152
+  },
+  "legacy": {
+    "count": 105,
+    "tokenPointersRva": "0x98755f0",
+    "chinesePointersRva": "0x98774f0",
+    "englishPointersRva": "0x9877840",
+    "imagePattern": "expression_{index}.png",
+    "imageIndexBase": 1
+  },
+  "panelResource": "emoji/emojipanel-config.xml",
+  "newEmojiResource": "emoji/newemoji-config.xml",
+  "expectedPanelCount": 109,
+  "expectedNewEmojiCount": 45,
+  "research": "Qt initializer at RVA 0x1175 independently establishes the RCC arrays. Legacy initialization at RVA 0x3e3d287 reads the token table by index; RVA 0x3e3d306 passes index+1 to the expression_%1.png formatter. Chinese and English pointer arrays each contain 105 aligned names. All 109 panel tokens resolve exactly to 69 legacy entries or 40 new-emoji XML entries."
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "version": "4.2.0.11",
+  "architecture": "x64",
+  "dllSha256": "745cdf2955fa5128cdb00c056c97571156a5f107406a9bb15ac0754f3246b201",
+  "agents": {
+    "contacts": [
+      "contacts.js"
+    ],
+    "send": [
+      "send-context.js",
+      "send-request.js",
+      "send-text.js",
+      "send-image.js",
+      "send-exports.js"
+    ]
+  },
+  "nativeValidation": {
+    "contacts": true,
+    "text": true,
+    "image": true
+  },
+  "notes": "Contacts, native text and native image submissions validated on 2026-10-30; text and image visible in the selected test conversation. Server delivery is not independently confirmed. Native callback owner is retained until client exit.",
+  "capabilities": {
+    "contacts": true,
+    "text": true,
+    "image": true,
+    "sticker": false,
+    "emojiSearch": false,
+    "emojiAdd": false
+  },
+  "staticAbiVerified": {
+    "contacts": true,
+    "text": true,
+    "image": true
+  }
+}

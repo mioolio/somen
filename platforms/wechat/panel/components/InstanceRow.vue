@@ -37,6 +37,7 @@ const processes = computed(() => props.instance.processIds?.length ? props.insta
     </summary>
     <div class="instance-details">
       <dl class="detail-grid">
+        <div v-if="identified" class="detail-wide"><RouterLink class="button button-secondary" :to="{ path: '/wechat/workspace', query: { pid: instance.pid } }">设为工作微信</RouterLink></div>
         <div v-if="instance.windowTitle"><dt>窗口</dt><dd>{{ instance.windowTitle }}</dd></div>
         <div v-if="instance.startedAt"><dt>启动时间</dt><dd>{{ formatTime(instance.startedAt, true) }}</dd></div>
         <div v-if="instance.version"><dt>版本</dt><dd>{{ instance.version }}</dd></div>

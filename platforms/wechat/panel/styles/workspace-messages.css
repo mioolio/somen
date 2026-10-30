@@ -1,0 +1,33 @@
+/* 边界：工作微信文字、图片和表情草稿区域，仅作用于 wx-work 命名空间。 */
+.wx-work-recipient { font-size: 12px; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%; }
+.wx-work-tabs { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.wx-work-tabs > button { border: 0; border-bottom: 2px solid transparent; background: none; color: var(--color-muted); padding: 6px 0 9px; font-size: 12px; line-height: 1.5; white-space: nowrap; }
+.wx-work-tabs > button.selected { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.wx-work-message { display: block; width: 100%; min-height: 145px; resize: vertical; margin-top: 15px; padding: 13px; border: 1px solid #dfe6ef; border-radius: 8px; background: #fcfdff; font: inherit; font-size: 14px; line-height: 1.8; color: var(--color-text); }
+.wx-work-message::placeholder { color: var(--color-muted); }
+.wx-work-message:focus { outline: 3px solid #3971ee20; border-color: #9bb8f6; }
+.wx-work-compose-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 17px; }
+.wx-work-compose-footer .button { min-height: 38px; font-size: 12px; }
+.wx-work-receipt { font-size: 12px; color: var(--color-muted); line-height: 1.7; }
+.wx-work-error { margin-top: 13px; font-size: 12px; color: #a15c40; line-height: 1.7; overflow-wrap: anywhere; }
+.wx-work-uncertain { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--color-border); color: #8c703e; font-size: 12px; line-height: 1.7; }
+.wx-work-image-draft { margin-top: 15px; }
+.wx-work-image-pick { width: 100%; min-height: 145px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px dashed #ccd8e9; border-radius: 8px; background: #fcfdff; color: var(--color-muted); font-size: 12px; }
+.wx-work-image-pick:hover:not(:disabled) { border-color: #91b1f1; color: var(--color-primary); }
+.wx-work-image-preview { display: flex; align-items: center; gap: 12px; padding: 12px; min-width: 0; border: 1px solid #e3eaf3; border-radius: 8px; }
+.wx-work-image-preview > img { width: 82px; height: 82px; object-fit: contain; background: #f6f8fc; border-radius: 5px; }
+.wx-work-image-preview > span { min-width: 0; flex: 1; font-size: 12px; color: var(--color-muted); overflow-wrap: anywhere; }
+.wx-work-emoticon-controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.wx-work-search { width: 210px; max-width: 100%; min-width: 0; display: flex; align-items: center; gap: 8px; color: var(--color-muted); background: #fafbfd; border: 1px solid #dfe6ef; border-radius: 7px; padding: 0 10px; height: 36px; }
+.wx-work-search:focus-within { border-color: #9bb8f6; }
+.wx-work-search input { min-width: 0; width: 100%; height: 34px; font-size: 12px; color: var(--color-text); border: 0; outline: none; background: transparent; }
+.wx-work-search input::placeholder { color: var(--color-muted); }
+.wx-work-search input:focus-visible { outline: none; }
+.wx-work-emoticon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px; margin-top: 20px; max-height: 340px; overflow-y: auto; }
+.wx-work-emoticon-item { min-width: 0; min-height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 9px 5px; background: #fff; border: 1px solid #e8edf4; border-radius: 8px; color: #6c7d93; }
+.wx-work-emoticon-item:hover:not(:disabled) { border-color: #9bb8f6; background: #f8faff; }
+.wx-work-emoticon-item:disabled { opacity: .7; cursor: default; }
+.wx-work-emoticon-item img { width: 50px; height: 50px; object-fit: contain; }
+.wx-work-emoticon-item small { max-width: 100%; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+.wx-work-emoji-text { font-size: 32px; line-height: 1.5; }
+@media (max-width: 360px) { .wx-work-message { min-height: 125px; } .wx-work-image-preview { flex-wrap: wrap; } .wx-work-image-preview > span { flex-basis: calc(100% - 110px); } .wx-work-emoticon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wx-work-search { width: 100%; } }

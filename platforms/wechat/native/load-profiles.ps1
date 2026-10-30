@@ -7,7 +7,13 @@ function Import-AccountProfiles {
     if (-not (Test-Path -LiteralPath $Directory -PathType Container)) {
         return [PSCustomObject]@{ profiles=$profiles.ToArray(); warnings=$diagnostics.ToArray() }
     }
-    try { $files = @(Get-ChildItem -LiteralPath $Directory -Filter '*.json' -File -ErrorAction Stop) }
+    try {
+        $files = @(Get-ChildItem -LiteralPath $Directory -Directory -ErrorAction Stop |
+            Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } | ForEach-Object {
+                $identityPath = Join-Path $_.FullName 'identity.json'
+                if (Test-Path -LiteralPath $identityPath -PathType Leaf) { Get-Item -LiteralPath $identityPath -ErrorAction Stop }
+            })
+    }
     catch {
         $diagnostics.Add(@{code='ACCOUNT_PROFILES_UNAVAILABLE'; message='账号版本配置目录暂不可读取。'})
         return [PSCustomObject]@{ profiles=$profiles.ToArray(); warnings=$diagnostics.ToArray() }
@@ -16,6 +22,7 @@ function Import-AccountProfiles {
         try {
             if ($file.Length -gt 16384) { throw 'Profile exceeds 16 KiB.' }
             $definition = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+            if ([string]$definition.version -ne $file.Directory.Name) { throw 'Profile version differs from directory.' }
             $profile = New-Object Somen.Wechat.AccountProfile
             $profile.schemaVersion = [int]$definition.schemaVersion
             foreach ($field in @('reader','moduleName','version','architecture','dllSha256')) {
