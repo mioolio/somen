@@ -94,9 +94,21 @@ function queue(callback){
  });
 }
 function currentTask() {const p=pair();fn(0x4a40e0,'pointer',['pointer'])(p);if(p.readPointer().isNull())throw Error('E_NATIVE_TASK_SCOPE');return p;}
+// Completion and native ownership are separate: completed jobs remain rooted
+// until their existing delayed destructors run. Errors/unknown work stay busy.
+function pendingSendWork() {
+ return {
+  pendingTasks:[...tasks.values()].filter(record=>record.completed!==true).length,
+  pendingCallbacks:[...callbacks.entries()].filter(([id,keep])=>keep.destroyed!==true||!['accepted','failed'].includes(requests.get(id)?.status)).length,
+  retainedTasks:tasks.size,retainedCallbacks:callbacks.size,
+ };
+}
+function requireSendIdle() {
+ const work=pendingSendWork();if(imageRuntimeBlocked||work.pendingTasks>0||work.pendingCallbacks>0)throw Error('E_NATIVE_SEND_BUSY');
+}
 function inspect() {
  moduleVerified();for(const key of Object.keys(PREFIX))fn(parseInt(key,16),'void',[]);
- return {pid:Process.id,generation:binding?.generation??null,version:'4.2.0.11',dllSha256:VERIFIED_DLL_SHA256,self:binding?.self??null,accountVerified:binding!==null,ready:binding!==null&&!imageRuntimeBlocked,sendValidated,imageSendValidated,imageValidationAllowed,imageProloguesVerified:true,imageEntryRva:'0x2cc2350',chatId:binding?.chatId??null,sessionId:binding?.sessionId??null,displayName:binding?.displayName??null,prologuesVerified:true,pendingTasks:tasks.size,pendingCallbacks:callbacks.size,entryRva:'0x571fd20',dispatch:'Weixin native coroutine queue',foregroundRequired:false};
+ return {pid:Process.id,generation:binding?.generation??null,version:'4.2.0.11',dllSha256:VERIFIED_DLL_SHA256,self:binding?.self??null,accountVerified:binding!==null,ready:binding!==null&&!imageRuntimeBlocked,sendValidated,imageSendValidated,imageValidationAllowed,imageProloguesVerified:true,imageEntryRva:'0x2cc2350',chatId:binding?.chatId??null,sessionId:binding?.sessionId??null,displayName:binding?.displayName??null,prologuesVerified:true,...pendingSendWork(),entryRva:'0x571fd20',dispatch:'Weixin native coroutine queue',foregroundRequired:false};
 }
 async function prepare(config) {
  if(binding||preparing)throw Error('E_ALREADY_BOUND');

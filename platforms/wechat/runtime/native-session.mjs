@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { setTimeout as delay } from 'node:timers/promises';
 import { requireBinding } from './binding-proof.mjs';
 import { agentSource, versionDefinition } from './agent-sources.mjs';
-import { readSendImage, writeNativeImage } from './image-resource.mjs';
+import { createImageSender } from './image-send-operation.mjs';
+import { waitForNativeIdle } from './native-idle.mjs';
 import { retainNativeOwner } from './resident-owner.mjs';
 import { createTargetLifetime } from './target-lifetime.mjs';
 
@@ -59,18 +59,7 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
     }
     return current;
   }
-  async function waitIdle() {
-    for (let attempt = 0; attempt < 30; attempt++) {
-      let idle = true;
-      for (const script of scripts.values()) {
-        const state = await script.exports.inspect();
-        if ((state.pendingTasks || 0) || (state.pendingCallbacks || 0) || (state.retainedTasks || 0) || (state.activeReads || 0)) idle = false;
-      }
-      if (idle) return true;
-      await delay(200);
-    }
-    return false;
-  }
+  const waitIdle = () => waitForNativeIdle(scripts);
   let read;
   try {
     read = await load('contacts');
@@ -89,17 +78,24 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
     throw error;
   }
   onEvent({ type: 'native.ready', version: binding.version });
-  async function send(method, input) {
+  async function send(method, input, { idleChecked = false } = {}) {
     if (!allowed(method === 'sendText' ? 'text' : 'image')) throw Object.assign(new Error('当前版本此发送能力尚未验证。'), { code: 'NATIVE_SEND_UNVERIFIED' });
     await requireLive();
     if (!recipient) throw Object.assign(new Error('尚未绑定测试联系人。'), { code: 'TEST_TARGET_REQUIRED' });
-    if (!await waitIdle()) throw Object.assign(new Error('微信仍在处理上一项操作。'), { code: 'NATIVE_BUSY' });
+    if (!idleChecked && !await waitIdle()) throw Object.assign(new Error('微信仍在处理上一项操作。'), { code: 'NATIVE_BUSY' });
     onEvent({ type: 'native.send-start', kind: method === 'sendText' ? 'text' : 'image', requestId: input.requestId });
     const result = await scripts.get('send').exports[method]({ ...input, to: recipient.id });
     if (result.status === 'unknown') blocked = true;
     onEvent({ type: 'native.send-result', kind: method === 'sendText' ? 'text' : 'image', requestId: input.requestId, status: result.status });
     return { ...result, deliveryConfirmed: false };
   }
+  const sendPreparedImage = createImageSender({ accountId: binding.accountId, requireLive,
+    recipientId: () => recipient?.id, waitIdle,
+    prepare: input => scripts.get('send').exports.prepareImage(input),
+    // Only this serialized preparation path skips a second host idle poll.
+    // send() repeats account/target checks; the agent repeats active-work checks.
+    submit: input => send('sendImage', input, { idleChecked: true }),
+  });
   return {
     async contacts() {
       await requireLive();
@@ -136,14 +132,7 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
     sendText({ requestId, content }) { return send('sendText', { requestId, text: content }); },
     async sendImage({ requestId, path }) {
       if (!allowed('image')) throw Object.assign(new Error('当前版本图片发送尚未验证。'), { code: 'NATIVE_SEND_UNVERIFIED' });
-      await requireLive();
-      if (!recipient) throw new Error('尚未绑定测试联系人。');
-      if (!await waitIdle()) throw new Error('微信仍在处理上一项操作。');
-      const image = await readSendImage(path);
-      const prepared = await scripts.get('send').exports.prepareImage({ to: recipient.id, imageResource: image.resource, imageSha256: image.sha256 });
-      if (prepared.self !== binding.accountId || prepared.chatId !== recipient.id || prepared.imageSha256 !== image.sha256) throw new Error('微信图片资源绑定校验失败。');
-      await writeNativeImage(image, prepared.cachePath);
-      return send('sendImage', { requestId, imageResource: image.resource, imageSha256: image.sha256 });
+      return sendPreparedImage({ requestId, path });
     },
     async status() {
       return { ready: !detached && !blocked && !quiesced, detached, blocked, quiesced, targetBound: Boolean(recipient),

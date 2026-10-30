@@ -4,7 +4,7 @@
 // HttpResource cache. It does not accept an ordinary local file path.
 async function prepareImage(input){
  if(!binding||input?.to!==binding.chatId)throw Error('E_CHAT_SCOPE');
- if(imageRuntimeBlocked||tasks.size>0||callbacks.size>0)throw Error('E_NATIVE_SEND_BUSY');
+ requireSendIdle();
  if(!sendValidated||(!imageSendValidated&&!(imageValidationAllowed&&binding.chatId==='filehelper')))throw Error('E_IMAGE_BINARY_UNVERIFIED');
  if(!/^wxcc-image-[a-f0-9-]{36}$/.test(input.imageResource??'')||!/^[a-f0-9]{64}$/.test(input.imageSha256??'')||imageResources.has(input.imageResource)||imageResources.size>=1000)throw Error('E_IMAGE_RESOURCE');
  return await queue(isCancelled=>{

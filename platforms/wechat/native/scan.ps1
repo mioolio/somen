@@ -16,12 +16,16 @@ try {
 $nativeReady = $false
 if ($entries.Count -gt 0) {
     try {
-        Add-Type -Path @(
-            (Join-Path $PSScriptRoot 'AccountProfile.cs'),
-            (Join-Path $PSScriptRoot 'ProcessMemory.cs'),
-            (Join-Path $PSScriptRoot 'CurrentAccount.cs'),
-            (Join-Path $PSScriptRoot 'ActiveFileHandles.cs')
-        ) -ErrorAction Stop
+        # A resident read-only scanner reuses compiled types and validated file
+        # hashes. Every request still reads fresh process lifetimes/account memory.
+        if ($null -eq ('Somen.Wechat.CurrentAccount' -as [type])) {
+            Add-Type -Path @(
+                (Join-Path $PSScriptRoot 'AccountProfile.cs'),
+                (Join-Path $PSScriptRoot 'ProcessMemory.cs'),
+                (Join-Path $PSScriptRoot 'CurrentAccount.cs'),
+                (Join-Path $PSScriptRoot 'ActiveFileHandles.cs')
+            ) -ErrorAction Stop
+        }
         $nativeReady = $true
     } catch {
         $warnings.Add(@{code='ACCOUNT_PROVIDER_UNAVAILABLE'; message='账号读取组件暂不可用，进程识别仍可使用。'})

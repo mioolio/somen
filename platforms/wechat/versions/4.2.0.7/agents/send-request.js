@@ -1,7 +1,7 @@
 /** Boundary: request/target checks shared by independently assembled text and image adapters. */
 function validateRequest(input,kind='text',validation=false) {
  if(!binding||input?.to!==binding.chatId)throw Error('E_CHAT_SCOPE');
- if(imageRuntimeBlocked||tasks.size>0||callbacks.size>0)throw Error('E_NATIVE_SEND_BUSY');
+ requireSendIdle();
  if(!sendValidated&&!(validation===true&&textValidationAllowed&&binding.chatId==='filehelper'))throw Error('E_SEND_BINARY_UNVERIFIED');
  if(typeof input.requestId!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/.test(input.requestId)||input.requestId!==input.requestId.toLowerCase())throw Error('E_REQUEST_ID');
  if(kind==='image'){

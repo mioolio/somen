@@ -12,7 +12,7 @@ const contact = id => ({ id, displayName: `fixture-${id}` });
 const current = { ...identity, role: 'main', status: 'identified', account: { id: self, verified: true }, version: '4.2.0.7', executablePath: 'C:\\fixture\\Weixin.exe', processName: 'Weixin.exe' };
 async function fixture(t, options = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'somen-workspace-service-'));
-  const calls = { created: 0, sent: [], contacts: 0, disposed: 0, events: [] };
+  const calls = { created: 0, sent: [], contacts: 0, disposed: 0, events: [], scans: 0 };
   let target = null;
   let rows = [contact('fixture_alice')];
   let instance = current;
@@ -24,7 +24,7 @@ async function fixture(t, options = {}) {
     async sendImage(input) { calls.sent.push({ target: target?.id, input }); return { status: 'accepted', deliveryConfirmed: true }; },
     async dispose() { calls.disposed++; return { disposed: true }; },
   };
-  const service = createWorkspaceService({ directory, scan: async () => ({ instances: [{ ...instance }] }),
+  const service = createWorkspaceService({ directory, scan: async () => { calls.scans++; return { instances: [{ ...instance }] }; },
     runtimeFactory: async input => { calls.created++; calls.events.push(input.onEvent); return options.factory ? options.factory(input, runtime) : runtime; } });
   t.after(async () => {
     await service.dispose();
@@ -51,6 +51,18 @@ test('a repeated request id cannot submit native text twice or change its conten
   assert.equal((await service.sendText(request)).status, 'sent');
   assert.equal((await service.sendText(request)).status, 'sent');
   await assert.rejects(service.sendText({ ...request, content: 'different' }), { code: 'REQUEST_ID_CONFLICT' });
+  assert.equal(calls.sent.length, 1);
+});
+
+test('each new send performs one fresh identity check immediately before native submission', async t => {
+  const { service, calls, instance } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  const before = calls.scans;
+  await service.sendText({ requestId: 'fixture-one-fresh-scan', content: 'fixture' });
+  assert.equal(calls.scans - before, 1);
+  assert.equal(calls.sent.length, 1);
+  instance({ ...current, startedAt: '2026-10-30T02:00:00.1234567Z' });
+  await assert.rejects(service.sendText({ requestId: 'fixture-reused-pid', content: 'fixture' }), { outcome: 'not-sent' });
   assert.equal(calls.sent.length, 1);
 });
 test('a failed target replacement cannot expose a ready recipient or send to the old one', async t => {

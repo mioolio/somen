@@ -33,12 +33,12 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
   const emoticons = createEmoticonService({ getBinding: () => binding, sendToken: input => send('text', input) });
   const exclusive = operation => { const result = queue.then(operation); queue = result.catch(() => {}); return result; };
   const noSend = (message, code = 'WORKSPACE_NOT_READY') => Object.assign(new Error(message), { code, statusCode: 409, outcome: 'not-sent' });
-  async function active() {
+  function requireActive(state = monitor.getState()) {
     if (disposed) throw noSend('工作会话已停止。', 'WORKSPACE_DISPOSED');
-    const state = await monitor.checkNow();
     if (!binding || state.status !== 'active' || !state.canSend) throw noSend(state.reason?.message || '请重新选择工作微信。');
     if (blocked) throw noSend('上次操作结果未确认，发送已暂停。', 'SEND_OUTCOME_UNKNOWN');
   }
+  async function active() { requireActive(await monitor.checkNow()); }
   async function ensureRuntime() {
     await active();
     if (binding && !binding.version) {
@@ -78,7 +78,9 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
   }
   async function send(kind, input) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw noSend('发送内容无效。', 'INVALID_SEND');
-    await active();
+    // Validate current state before preparation; perform the fresh OS identity
+    // check once, immediately before native submission after durable reservation.
+    requireActive();
     if (!target || !runtime) throw noSend('请先读取并绑定唯一联系人。');
     if (runtimeCapabilities[kind] !== true) throw noSend('当前版本尚未验证此发送能力。', 'CAPABILITY_UNAVAILABLE');
     if (kind === 'text' && (typeof input.content !== 'string' || !input.content.trim() || input.content.includes('\0')
@@ -92,8 +94,10 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
     } catch (error) { error.outcome = 'not-sent'; throw error; }
     if (!reserved.fresh) return { ...reserved.record, status: reserved.record.status, requestId: input.requestId };
     await monitor.recordEvent('send.started', { operation: kind });
+    let nativeAttempted = false;
     try {
       await active();
+      nativeAttempted = true;
       const receipt = kind === 'text' ? await runtime.sendText(input) : await runtime.sendImage({ requestId: input.requestId, path: image.path });
       const status = receipt.deliveryConfirmed === true ? 'sent' : ['accepted', 'submitted'].includes(receipt.status) ? 'submitted'
         : receipt.status === 'failed' && receipt.nativeEntryCalled === false ? 'failed' : 'unknown';
@@ -103,8 +107,10 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
       await monitor.recordEvent('send.completed', { operation: kind, code: status.toUpperCase() });
       return lastReceipt;
     } catch (error) {
-      blocked = true;
-      lastReceipt = { requestId: input.requestId, status: 'unknown', deliveryConfirmed: false };
+      // A failed preflight is known not to have entered native code. Only a
+      // submission attempt can produce an unknown outcome and pause this binding.
+      if (nativeAttempted) blocked = true;
+      lastReceipt = { requestId: input.requestId, status: nativeAttempted ? 'unknown' : 'failed', deliveryConfirmed: false };
       await journal.finish(input.requestId, lastReceipt).catch(() => {});
       await monitor.recordEvent('send.failed', { operation: kind, error });
       throw error;
