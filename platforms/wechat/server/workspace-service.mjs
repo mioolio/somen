@@ -20,6 +20,8 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
 } = {}) {
   let binding = null, runtime = null, contacts = [], target = null, blocked = false, lastReceipt = null;
   let runtimeCapabilities = {};
+  // Retired native owners remain reachable while their independent workers retain callbacks.
+  const retiredRuntimes = [];
   let queue = Promise.resolve(), runtimeRevision = 0, disposed = false;
   const journal = createSendJournal({ directory });
   const monitor = createWorkspaceMonitor({ scan, directory });
@@ -61,7 +63,7 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
     return {
       binding, status: state.status === 'interrupted' ? 'lost' : state.status === 'stopped' ? 'idle' : blocked ? 'error' : state.status,
       reason: state.reason || (blocked ? { code: 'NATIVE_BLOCKED', message: '原生操作已暂停。' } : null), contacts, target, lastCheckedAt: state.lastCheckedAt,
-      diagnostics: { logStatus: state.logStatus }, lastReceipt,
+      diagnostics: { logStatus: state.logStatus, retainedRuntimeCount: retiredRuntimes.length }, lastReceipt,
       capabilities: { text: Boolean(target && runtime && runtimeCapabilities.text === true && !blocked && state.canSend), image: Boolean(target && runtime && runtimeCapabilities.image === true && !blocked && state.canSend),
         emoticon: Boolean(target && runtime && runtimeCapabilities.text === true && !blocked && state.canSend && emoticons.available(binding?.version)),
         emojiSearch: emoticons.available(binding?.version), emojiAdd: false },
@@ -110,11 +112,14 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
       if (disposed) throw noSend('工作会话已停止。', 'WORKSPACE_DISPOSED');
       const instance = snapshot.instances.find(row => row.pid === input.pid && row.startedAt === input.startedAt && row.account?.verified === true && row.role === 'main');
       if (!instance) throw noSend('微信身份已变化，请刷新列表。');
+      if (binding?.pid === instance.pid && binding.startedAt === instance.startedAt && binding.accountId === instance.account.id
+        && monitor.getState().status === 'active' && !blocked) return getState();
       if (runtime) {
         blocked = true;
         runtimeRevision++;
         const result = await runtime.dispose();
-        if (result?.retained) throw noSend('上次原生任务尚未结束，暂不能切换。');
+        if (result?.disposed !== true && result?.quiesced !== true) throw noSend('上次原生任务尚未结束，暂不能切换。');
+        if (result.retained) retiredRuntimes.push(runtime);
       }
       runtime = null; runtimeCapabilities = {}; contacts = []; target = null; blocked = false; lastReceipt = null;
       binding = { pid: instance.pid, startedAt: instance.startedAt, accountId: instance.account.id, version: instance.version, executablePath: instance.executablePath };

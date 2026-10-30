@@ -4,12 +4,12 @@ export default [
     path: '/wechat',
     name: 'wechat.instances',
     component: () => import('./pages/InstancesPage.vue'),
-    meta: { title: '微信多进程' },
+    meta: { title: '平台选择器' },
   },
   {
     path: '/wechat/workspace',
     name: 'wechat.workspace',
     component: () => import('./pages/WorkspacePage.vue'),
-    meta: { title: '工作微信' },
+    meta: { title: '工作' },
   },
 ];

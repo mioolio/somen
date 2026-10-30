@@ -30,5 +30,4 @@ export async function workspaceRequest(path, { method = 'GET', body, signal, tim
 }
 
 export const readWorkspace = signal => workspaceRequest('/workspace', { signal, timeout: 10000 });
-export const readWorkspaceInstances = signal => workspaceRequest('/instances', { signal, timeout: 25000 });
 export const updateWorkspace = (path, body) => workspaceRequest(path, { method: 'POST', body });

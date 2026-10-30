@@ -7,6 +7,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import App from './shell/App.vue';
 import EmptyHost from './shell/EmptyHost.vue';
 import { host, loadingHost, discoverPlatforms } from './shell/platform-registry.js';
+import { platformModules } from './shell/navigation.js';
 import './styles/tokens.css';
 import './styles/base.css';
 
@@ -33,7 +34,9 @@ function refreshHost() {
     );
     await router.isReady();
     const current = router.currentRoute.value;
-    const target = current.path === '/' ? host.value.platforms[0]?.path : current.fullPath;
+    const firstPlatform = host.value.platforms[0];
+    const defaultPath = firstPlatform ? platformModules(firstPlatform)[0]?.path : undefined;
+    const target = current.path === '/' ? defaultPath : current.fullPath;
     if (target) await router.replace(target);
   })().finally(() => {
     // Host readiness includes the lazy route component, not only plugin discovery.

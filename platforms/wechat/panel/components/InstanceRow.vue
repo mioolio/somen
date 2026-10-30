@@ -1,17 +1,21 @@
 <script setup>
-/** 边界：单个实例及其证据的只读呈现；不将候选、窗口标题或文件夹猜测为账号。 */
+/** 边界：呈现单个实例、证据与选择按钮；仅发出选择事件，不绑定账号或读取联系人。 */
 import { computed } from 'vue';
 import { UserRound, ChevronDown, Check, CircleHelp, Layers } from 'lucide-vue-next';
 import { formatTime, sourceLabel, formatEvidence } from '../utils/format.js';
-const props = defineProps({ instance: { type: Object, required: true } });
+const props = defineProps({ instance: { type: Object, required: true }, selectionBusy: Boolean, selecting: Boolean, working: Boolean });
+defineEmits(['select']);
 const identified = computed(() => props.instance.status === 'identified'
   && Boolean(props.instance.account?.id) && props.instance.account?.verified !== false);
 const statusLabel = computed(() => identified.value ? '已识别' : props.instance.status === 'ambiguous' ? '多项候选' : '待识别');
 const processes = computed(() => props.instance.processIds?.length ? props.instance.processIds : [props.instance.pid]);
+const selectable = computed(() => props.instance.role === 'main' && props.instance.status === 'identified'
+  && props.instance.account?.verified === true && Boolean(props.instance.startedAt));
 </script>
 
 <template>
-  <details class="instance-row">
+  <article class="instance-row">
+  <details class="instance-disclosure">
     <summary class="instance-summary">
       <div class="instance-identity">
         <span :class="['account-avatar', { identified }]"><UserRound :size="20" :stroke-width="1.7" /></span>
@@ -37,7 +41,6 @@ const processes = computed(() => props.instance.processIds?.length ? props.insta
     </summary>
     <div class="instance-details">
       <dl class="detail-grid">
-        <div v-if="identified" class="detail-wide"><RouterLink class="button button-secondary" :to="{ path: '/wechat/workspace', query: { pid: instance.pid } }">设为工作微信</RouterLink></div>
         <div v-if="instance.windowTitle"><dt>窗口</dt><dd>{{ instance.windowTitle }}</dd></div>
         <div v-if="instance.startedAt"><dt>启动时间</dt><dd>{{ formatTime(instance.startedAt, true) }}</dd></div>
         <div v-if="instance.version"><dt>版本</dt><dd>{{ instance.version }}</dd></div>
@@ -51,4 +54,6 @@ const processes = computed(() => props.instance.processIds?.length ? props.insta
       <ul v-if="!identified && instance.candidates?.length" class="candidate-list"><li v-for="(candidate, index) in instance.candidates" :key="`${candidate.id}-${index}`"><strong>{{ candidate.id }}</strong><span>{{ sourceLabel(candidate.source) }}</span><p v-if="candidate.evidence">{{ formatEvidence(candidate.evidence) }}</p></li></ul>
     </div>
   </details>
+  <div class="instance-actions"><button class="button button-secondary instance-work-button" :disabled="!selectable || selectionBusy" @click="$emit('select', instance)">{{ selecting ? '处理中' : working ? '进入工作' : '设为工作' }}</button></div>
+  </article>
 </template>

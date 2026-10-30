@@ -1,14 +1,13 @@
 /**
- * 边界：工作账号、联系人和监控状态的界面生命周期，不执行发送。
- * 同一时刻仅有一次配置操作；切换时废弃旧轮询，页面隐藏时暂停轮询。
+ * 边界：已选实例的联系人和监控状态生命周期，不选择实例或执行发送。
+ * 同一时刻仅有一次联系人操作；操作时废弃旧轮询，页面隐藏时暂停轮询。
  */
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { readWorkspace, readWorkspaceInstances, updateWorkspace } from '../api/workspace.js';
+import { readWorkspace, updateWorkspace } from '../api/workspace.js';
 
 const emptyWorkspace = () => ({ binding: null, status: 'idle', contacts: [], target: null, capabilities: {}, recentEvents: [] });
 export function useWorkspace() {
   const workspace = ref(emptyWorkspace());
-  const instances = ref([]);
   const loading = ref(true);
   const busy = ref(false);
   const readError = ref('');
@@ -27,10 +26,10 @@ export function useWorkspace() {
     workspace.value = { ...emptyWorkspace(), ...value };
     connected.value = true;
   }
-  async function refresh({ includeInstances = false } = {}) {
+  async function refresh({ clearErrors = false } = {}) {
     if (busy.value || disposed || refreshing) return;
     refreshing = true;
-    if (includeInstances) actionError.value = '';
+    if (clearErrors) actionError.value = '';
     controller?.abort();
     controller = new AbortController();
     const version = ++requestVersion;
@@ -39,11 +38,6 @@ export function useWorkspace() {
       if (disposed || version !== requestVersion) return;
       accept(payload);
       readError.value = '';
-      if (includeInstances) {
-        const snapshot = await readWorkspaceInstances(controller.signal);
-        if (disposed || version !== requestVersion) return;
-        instances.value = (snapshot.instances || []).filter(item => item.role === 'main' && item.status === 'identified' && item.account?.verified === true);
-      }
     } catch (failure) {
       if (disposed || version !== requestVersion) return;
       readError.value = failure.message || '读取失败';
@@ -75,15 +69,14 @@ export function useWorkspace() {
     return binding ? `${binding.pid}:${binding.startedAt}:${binding.accountId}` : '';
   });
   onMounted(() => {
-    void refresh({ includeInstances: true });
+    void refresh();
     timer = setInterval(() => {
       if (document.visibilityState === 'visible') void refresh();
     }, 5000);
   });
   onBeforeUnmount(() => { disposed = true; controller?.abort(); requestVersion++; clearInterval(timer); });
   return {
-    workspace, instances, loading, busy, error, connected, canSend, bindingKey, refresh,
-    select: instance => change('/workspace/select', { pid: instance.pid, startedAt: instance.startedAt }),
+    workspace, loading, busy, error, connected, canSend, bindingKey, refresh,
     loadContacts: () => change('/workspace/contacts', {}),
     selectTarget: contact => change('/workspace/target', { contactId: contact.id }),
   };

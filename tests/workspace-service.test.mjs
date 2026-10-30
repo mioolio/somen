@@ -15,6 +15,7 @@ async function fixture(t, options = {}) {
   const calls = { created: 0, sent: [], contacts: 0, disposed: 0, events: [] };
   let target = null;
   let rows = [contact('fixture_alice')];
+  let instance = current;
   const failingTargets = new Set();
   const runtime = {
     async contacts() { calls.contacts++; return { contacts: rows, complete: false }; },
@@ -23,7 +24,7 @@ async function fixture(t, options = {}) {
     async sendImage(input) { calls.sent.push({ target: target?.id, input }); return { status: 'accepted', deliveryConfirmed: true }; },
     async dispose() { calls.disposed++; return { disposed: true }; },
   };
-  const service = createWorkspaceService({ directory, scan: async () => ({ instances: [{ ...current }] }),
+  const service = createWorkspaceService({ directory, scan: async () => ({ instances: [{ ...instance }] }),
     runtimeFactory: async input => { calls.created++; calls.events.push(input.onEvent); return options.factory ? options.factory(input, runtime) : runtime; } });
   t.after(async () => {
     await service.dispose();
@@ -31,7 +32,7 @@ async function fixture(t, options = {}) {
     assert.equal(resolve(dirname(directory)), resolve(tmpdir()));
     await rm(directory, { recursive: true, force: true });
   });
-  return { service, directory, calls, runtime, rows: value => { rows = value; }, failingTargets };
+  return { service, directory, calls, runtime, rows: value => { rows = value; }, instance: value => { instance = value; }, failingTargets };
 }
 test('only the sole personal contact can become a send target', async t => {
   const { service, calls, rows } = await fixture(t);
@@ -63,19 +64,47 @@ test('a failed target replacement cannot expose a ready recipient or send to the
   assert.equal(calls.sent.length, 0);
 });
 test('events from a disposed runtime cannot revoke a replacement workspace', async t => {
-  const { service, calls } = await fixture(t);
+  const { service, calls, instance } = await fixture(t);
   await service.select(identity); await service.readContacts();
   const previousEvent = calls.events[0];
-  await service.select(identity); await service.readContacts();
+  instance({ ...current, pid: current.pid + 1 });
+  await service.select({ ...identity, pid: identity.pid + 1 }); await service.readContacts();
   previousEvent({ type: 'native.worker-exit', code: 0 });
   assert.equal(service.getState().capabilities.text, true);
 });
 test('a retained runtime leaves sending disabled when switching is rejected', async t => {
-  const { service, runtime } = await fixture(t);
+  const { service, runtime, instance } = await fixture(t);
   await service.select(identity); await service.readContacts();
   runtime.dispose = async () => ({ retained: true });
-  await assert.rejects(service.select(identity));
+  instance({ ...current, pid: current.pid + 1 });
+  await assert.rejects(service.select({ ...identity, pid: identity.pid + 1 }));
   assert.equal(service.getState().capabilities.text, false);
+});
+test('selecting the same active instance is idempotent and keeps its work context', async t => {
+  const { service, calls } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  const previous = service.getState();
+  const selected = await service.select(identity);
+  assert.deepEqual(selected.target, previous.target);
+  assert.equal(selected.capabilities.text, true);
+  assert.equal(calls.created, 1);
+  assert.equal(calls.disposed, 0);
+});
+test('a quiesced native owner stays retained while selecting a different work instance', async t => {
+  const { service, calls, runtime, instance } = await fixture(t);
+  await service.select(identity); await service.readContacts();
+  const previousEvent = calls.events[0];
+  runtime.dispose = async () => ({ disposed: false, retained: true, quiesced: true });
+  instance({ ...current, pid: current.pid + 1 });
+  const next = await service.select({ ...identity, pid: identity.pid + 1 });
+  assert.equal(next.binding.pid, identity.pid + 1);
+  assert.equal(next.target, null);
+  assert.equal(next.capabilities.text, false);
+  assert.equal(next.diagnostics.retainedRuntimeCount, 1);
+  await service.readContacts();
+  previousEvent({ type: 'native.detached' });
+  assert.equal(service.getState().status, 'active');
+  assert.equal(service.getState().capabilities.text, true);
 });
 test('shutdown during asynchronous runtime creation releases the late runtime without reading contacts', async t => {
   let finishFactory, started;

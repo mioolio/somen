@@ -2,12 +2,16 @@
 /** 边界：仅绘制导航、宿主状态与路由出口；所有平台页面由插件提供。 */
 import { inject, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { Blocks, ChevronRight, Monitor, Puzzle, ArrowUpRight } from 'lucide-vue-next';
+import { Blocks, ChevronRight, Monitor, ArrowUpRight } from 'lucide-vue-next';
+import PlatformNavigation from './PlatformNavigation.vue';
+import { findActivePlatform, findActiveModule } from './navigation.js';
 import './shell.css';
 
 const { host, loadingHost } = inject('host');
 const route = useRoute();
-const activePlatform = computed(() => host.value.platforms.find((item) => route.path.startsWith(item.path)));
+const activePlatform = computed(() => findActivePlatform(host.value.platforms, route.path));
+const activeModule = computed(() => activePlatform.value?.navigation
+  ? findActiveModule(activePlatform.value, route.path) : undefined);
 </script>
 
 <template>
@@ -18,23 +22,20 @@ const activePlatform = computed(() => host.value.platforms.find((item) => route.
         <span>SOMEN</span>
       </RouterLink>
 
-      <nav class="platform-nav" aria-label="平台">
-        <div class="nav-label">平台</div>
-        <RouterLink v-for="platform in host.platforms" :key="platform.id" :to="platform.path"
-          class="platform-link" active-class="is-active">
-          <component :is="platform.icon || Puzzle" :size="20" :stroke-width="1.8" />
-          <span>{{ platform.label }}</span>
-          <span class="nav-active-dot" aria-hidden="true"></span>
-        </RouterLink>
-        <div v-if="!host.platforms.length" class="nav-empty">{{ loadingHost ? '正在加载平台…' : '暂无可用平台' }}</div>
-      </nav>
+      <PlatformNavigation :platforms="host.platforms" :loading="loadingHost" />
 
       <div class="sidebar-footer"><Monitor :size="16" /><span>Windows</span></div>
     </aside>
 
     <div class="workspace-body">
       <header class="topbar">
-        <div class="breadcrumbs"><span>平台</span><ChevronRight :size="14" /><strong>{{ activePlatform?.label || '工作台' }}</strong></div>
+        <div class="breadcrumbs">
+          <template v-if="activePlatform">
+            <span>{{ activePlatform.label }}</span>
+            <template v-if="activeModule"><ChevronRight :size="14" /><strong>{{ activeModule.label }}</strong></template>
+          </template>
+          <strong v-else>工作台</strong>
+        </div>
         <div class="topbar-meta"><span class="version-tag">v0.1</span></div>
       </header>
       <main class="main-content" id="main-content"><RouterView /></main>

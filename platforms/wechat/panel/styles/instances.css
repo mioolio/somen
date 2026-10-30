@@ -24,8 +24,11 @@
 .process-count { display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 12px; }
 .row-expand { white-space: nowrap; color: #64748b; font-size: 12px; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
 .row-expand svg { transition: transform .15s; }
-.instance-row[open] .row-expand svg { transform: rotate(180deg); }
-.instance-row[open] .instance-summary { background: #fbfcff; }
+.instance-disclosure[open] .row-expand svg { transform: rotate(180deg); }
+.instance-disclosure[open] .instance-summary { background: #fbfcff; }
+.instance-actions { display: flex; justify-content: flex-end; padding: 0 25px 18px; }
+.instance-work-button { min-height: 34px; padding: 0 12px; font-size: 12px; }
+.instance-selection-error { margin-bottom: 18px; padding: 13px 16px; background: #fff7f2; border: 1px solid #f1dfd5; border-radius: 9px; color: #8a603f; font-size: 13px; overflow-wrap: anywhere; }
 .instance-details { padding: 0 25px 22px 75px; background: #fbfcff; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 28px; margin: 0; padding-top: 18px; border-top: 1px dashed #e4eaf4; }
 .detail-grid > div { min-width: 0; }
@@ -54,4 +57,5 @@
   .account-avatar { width: 28px; height: 28px; border-radius: 8px; }
   .instance-identity { gap: 7px; }
   .detail-grid { grid-template-columns: 1fr; }
+  .instance-actions { padding-right: 14px; padding-left: 14px; }
 }

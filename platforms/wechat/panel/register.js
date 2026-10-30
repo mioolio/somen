@@ -7,5 +7,9 @@ export default {
   label: '微信',
   path: '/wechat',
   icon: MessagesSquare,
+  navigation: [
+    { id: 'selector', label: '平台选择器', path: '/wechat' },
+    { id: 'workspace', label: '工作', path: '/wechat/workspace' },
+  ],
   routes,
 };
