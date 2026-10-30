@@ -1,0 +1,57 @@
+/* 边界：微信实例列表、单项详情和空态；不影响宿主布局。 */
+.instance-columns, .instance-summary { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(110px, .8fr) minmax(120px, .8fr) 48px; gap: 20px; align-items: center; }
+.instance-columns { padding: 12px 25px; background: #f9fbfe; border-top: 1px solid #f0f3f8; border-bottom: 1px solid #edf1f7; color: #64748b; font-size: 12px; }
+.instance-row + .instance-row { border-top: 1px solid #edf1f6; }
+.instance-summary { padding: 22px 25px; cursor: pointer; list-style: none; transition: background .15s; }
+.instance-summary::-webkit-details-marker { display: none; }
+.instance-summary::marker { content: ''; }
+.instance-summary:hover { background: #fafcff; }
+.instance-identity { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.account-avatar { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid #edf0f5; background: #f6f8fb; border-radius: 11px; color: #64748b; flex-shrink: 0; }
+.account-avatar.identified { color: #5aab8d; border-color: #e4f1eb; background: #f0f8f4; }
+.identity-copy { min-width: 0; }
+.account-name { font-size: 14px; color: #334155; font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-status { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.status-badge { display: inline-flex; gap: 3px; align-items: center; background: #f4f1e9; color: #64748b; padding: 2px 5px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
+.status-badge.identified { color: #27765e; background: #edf8f2; }
+.status-badge.ambiguous { color: #64748b; background: #faf2e4; }
+.role-badge { color: #64748b; font-size: 12px; }
+.instance-process, .instance-version { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pid-label { color: #64748b; font-size: 12px; letter-spacing: .3px; }
+.pid-label strong { color: #5c6d87; font-weight: 500; font-size: 12px; font-variant-numeric: tabular-nums; margin-left: 3px; }
+.process-name { font-size: 12px; color: #64748b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.instance-version > span:first-child { color: #6d7e97; font-size: 12px; font-variant-numeric: tabular-nums; }
+.process-count { display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 12px; }
+.row-expand { white-space: nowrap; color: #64748b; font-size: 12px; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+.row-expand svg { transition: transform .15s; }
+.instance-row[open] .row-expand svg { transform: rotate(180deg); }
+.instance-row[open] .instance-summary { background: #fbfcff; }
+.instance-details { padding: 0 25px 22px 75px; background: #fbfcff; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 28px; margin: 0; padding-top: 18px; border-top: 1px dashed #e4eaf4; }
+.detail-grid > div { min-width: 0; }
+.detail-grid dt { color: #64748b; font-size: 12px; margin-bottom: 6px; }
+.detail-grid dd { color: #71809a; font-size: 12px; line-height: 1.8; margin: 0; overflow-wrap: anywhere; }
+.detail-grid .mono { font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; }
+.detail-wide { grid-column: 1 / -1; }
+.unidentified-note { font-size: 12px; color: #64748b; line-height: 1.8; margin-top: 15px; }
+.candidate-list { margin: 12px 0 0; padding-left: 18px; color: #64748b; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.candidate-list li + li { margin-top: 8px; }
+.candidate-list strong { font-weight: 500; }
+.candidate-list span { margin-left: 8px; color: #64748b; font-size: 12px; }
+.candidate-list p { color: #64748b; }
+.instances-empty { text-align: center; padding: 50px 24px 56px; min-height: 300px; }
+.empty-wechat { display: grid; place-items: center; width: 67px; height: 67px; color: #64748b; border: 1px solid #e9f0ec; background: #f5f9f7; border-radius: 21px; margin: 0 auto 20px; position: relative; }
+.empty-wechat::after { content: ''; position: absolute; inset: -7px; border: 1px dashed #e7eee9; border-radius: 27px; }
+.instances-empty h3 { color: #6c7c95; font-size: 13px; font-weight: 500; }
+.instances-empty p { color: #64748b; font-size: 12px; line-height: 1.8; margin-top: 10px; }
+.clear-filter-button { display: inline-flex; align-items: center; gap: 5px; margin-top: 23px; border: 0; color: #6f95e2; font-size: 12px; background: transparent; padding: 5px 8px; border-radius: 5px; }
+@media (max-width: 1200px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.3fr) minmax(95px, .7fr) minmax(95px, .7fr) 48px; gap: 15px; } .source-label { display: none; } }
+@media (max-width: 1000px) and (min-width: 761px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.3fr) minmax(85px, .8fr) 48px; gap: 13px; } .instance-columns span:nth-child(3), .instance-version { display: none; } .instance-process { gap: 7px; } .instance-details { padding-left: 25px; } }
+@media (max-width: 760px) { .instance-columns { padding: 12px 19px; } .instance-summary { padding: 20px 19px; } .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1.2fr) minmax(80px, .7fr) minmax(85px, .7fr) 18px; gap: 11px; } .row-expand > span { display: none; } .account-avatar { width: 33px; height: 33px; border-radius: 10px; } .instance-identity { gap: 9px; } .account-name { font-size: 14px; } .instance-details { padding-left: 19px; padding-right: 19px; } .detail-grid { gap: 14px 20px; } }
+@media (max-width: 560px) { .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1fr) 86px 17px; gap: 10px; } .instance-columns span:nth-child(3), .instance-version { display: none; } .account-name { font-size: 14px; } .pid-label strong { font-size: 12px; } .process-name { font-size: 12px; } .instances-empty { padding-left: 18px; padding-right: 18px; } }
+@media (max-width: 360px) {
+  .instance-columns, .instance-summary { grid-template-columns: minmax(0, 1fr) 65px 14px; gap: 8px; padding-left: 14px; padding-right: 14px; }
+  .account-avatar { width: 28px; height: 28px; border-radius: 8px; }
+  .instance-identity { gap: 7px; }
+  .detail-grid { grid-template-columns: 1fr; }
+}

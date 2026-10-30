@@ -1,0 +1,7 @@
+{
+  "id": "wechat",
+  "label": "微信",
+  "path": "/wechat",
+  "apiVersion": 1,
+  "enabled": true
+}

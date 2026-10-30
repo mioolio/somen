@@ -93,3 +93,15 @@ test('a stalled registration times out, rolls back routes, and releases late res
   finish();
   await plugins.dispose();
 });
+test('a broken plugin cannot stall startup by returning a pending cleanup promise', async t => {
+  const { directory } = await fixture(t, 'cleanup-stalled', '');
+  const router = createRouter();
+  const plugins = await discoverPlugins({ directory, router, cleanupTimeoutMs: 20, importer: async () => ({
+    register({ onDispose }) {
+      onDispose(() => new Promise(() => {}));
+      throw new Error('fixture failed');
+    },
+  }) });
+  assert.equal(plugins.platforms[0].status, 'error');
+  await plugins.dispose();
+});

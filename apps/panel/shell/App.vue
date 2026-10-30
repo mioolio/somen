@@ -15,10 +15,9 @@ const activePlatform = computed(() => host.value.platforms.find((item) => route.
     <aside class="sidebar" aria-label="工作台导航">
       <RouterLink class="brand" to="/" aria-label="SOMEN 工作台首页">
         <span class="brand-mark"><Blocks :size="22" :stroke-width="1.8" /></span>
-        <span>SOMEN<span class="brand-caption">本地工作台</span></span>
+        <span>SOMEN</span>
       </RouterLink>
 
-      <div class="workspace-label">工作空间 <span class="local-tag">LOCAL</span></div>
       <nav class="platform-nav" aria-label="平台">
         <div class="nav-label">平台</div>
         <RouterLink v-for="platform in host.platforms" :key="platform.id" :to="platform.path"
@@ -30,20 +29,16 @@ const activePlatform = computed(() => host.value.platforms.find((item) => route.
         <div v-if="!host.platforms.length" class="nav-empty">{{ loadingHost ? '正在加载平台…' : '暂无可用平台' }}</div>
       </nav>
 
-      <div class="sidebar-note">
-        <span class="note-icon"><Puzzle :size="18" /></span>
-        <div><strong>按需扩展，自由组合</strong><p>每个平台都有自己的空间</p></div>
-      </div>
-      <div class="sidebar-footer"><Monitor :size="16" /><span>Windows 本地运行</span><span class="footer-dot"></span></div>
+      <div class="sidebar-footer"><Monitor :size="16" /><span>Windows</span></div>
     </aside>
 
     <div class="workspace-body">
       <header class="topbar">
-        <div class="breadcrumbs"><span>工作空间</span><ChevronRight :size="14" /><strong>{{ activePlatform?.label || '平台' }}</strong></div>
-        <div class="topbar-meta"><span class="version-tag">v0.1</span><span class="device-pill"><span></span>本机工作台</span></div>
+        <div class="breadcrumbs"><span>平台</span><ChevronRight :size="14" /><strong>{{ activePlatform?.label || '工作台' }}</strong></div>
+        <div class="topbar-meta"><span class="version-tag">v0.1</span></div>
       </header>
       <main class="main-content" id="main-content"><RouterView /></main>
-      <footer class="workspace-footer"><span>SOMEN <span class="footer-separator">/</span> 让每个平台各就其位</span><a href="https://github.com/mioolio/somen" target="_blank" rel="noreferrer">项目仓库 <ArrowUpRight :size="14" /></a></footer>
+      <footer class="workspace-footer"><a href="https://github.com/mioolio/somen" target="_blank" rel="noreferrer">GitHub <ArrowUpRight :size="14" /></a></footer>
     </div>
   </div>
 </template>

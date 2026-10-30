@@ -8,9 +8,9 @@ const { host, loadingHost, refreshHost } = inject('host');
 <template>
   <section class="host-empty surface" aria-live="polite">
     <span class="empty-symbol"><PackageOpen :size="32" :stroke-width="1.5" /></span>
-    <h1>{{ loadingHost ? '正在准备工作台' : host.error ? '本地服务暂时未连接' : '工作台已就绪' }}</h1>
-    <p>{{ loadingHost ? '正在发现可用的平台。' : host.error || (host.platforms.length ? '从左侧选择一个平台，开始使用。' : '放入平台插件后，即可在这里打开。') }}</p>
+    <h1>{{ loadingHost ? '加载中' : host.error ? '连接失败' : host.platforms.length ? '选择平台' : '暂无平台' }}</h1>
+    <p v-if="host.error">{{ host.error }}</p>
     <ul v-if="host.failures.length" class="host-failures"><li v-for="failure in host.failures" :key="failure.id">{{ failure.id }}：{{ failure.message }}</li></ul>
-    <button v-if="!loadingHost" class="button button-secondary" @click="refreshHost"><RefreshCw :size="16" />重新发现平台</button>
+    <button v-if="!loadingHost" class="button button-secondary" @click="refreshHost"><RefreshCw :size="16" />刷新</button>
   </section>
 </template>

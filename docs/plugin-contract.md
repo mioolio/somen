@@ -39,11 +39,11 @@ export function register({ router, onDispose }) {
 }
 ```
 
-宿主添加 `/api/<id>` 前缀，不允许注册其他平台接口。返回值序列化为 JSON。抛出的 `error.code` 和 `error.message` 转为 503；错误信息应是本机用户可读说明，不含密钥或原始内存。启动失败回滚路由和 cleanup；退出调用 cleanup，异步任务应响应停止信号。
+宿主添加 `/api/<id>` 前缀，不允许注册其他平台接口。返回值序列化为 JSON。抛出的 `error.code` 和 `error.message` 转为 503；错误信息应是本机用户可读说明，不含密钥或原始内存。异步导入及注册最多等待 5 秒，失败回滚路由和 cleanup；退出调用 cleanup，异步任务应响应停止信号。同步死循环无法在同一 Node 进程内隔离，插件必须是受信任本地代码。
 
 ## 前端注册
 
-`panel/register.js` 默认导出 `{ id, label, path, routes }`；`routes` 从自己的 `routes.js` 导入，使用 Vue Router 路由数组，组件动态导入。路由都在 `/<id>` 下，不能引用其他平台页面。
+`panel/register.js` 默认导出 `{ id, label, path, routes }`；`routes` 从自己的 `routes.js` 导入，使用 Vue Router 路由数组，组件动态导入。路由及别名都在 `/<id>` 下，命名路由使用 `<id>.` 前缀，不能引用其他平台页面或覆盖宿主路由。子路由可用相对路径；入口直接声明组件。
 
 壳层自动发现注册文件、读取 `/api/platforms`，只启用后端 `status: ready` 的同 id 插件。注册文件无平台间副作用，具体页面访问时加载。未安装、禁用、注册损坏均有空态或提示。
 

@@ -1,0 +1,37 @@
+/** 边界：微信面板纯展示格式化；不修改扫描结果，不推断账号或登录状态。 */
+export function formatTime(value, withDate = false) {
+  if (!value) return '尚未扫描';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '时间未获取';
+  return new Intl.DateTimeFormat('zh-CN', withDate
+    ? { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+    : { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(date);
+}
+
+export function formatDuration(value) {
+  const milliseconds = Number(value);
+  if (!Number.isFinite(milliseconds)) return '—';
+  return milliseconds < 1000 ? `${Math.round(milliseconds)} ms` : `${(milliseconds / 1000).toFixed(1)} s`;
+}
+
+export function formatEvidence(value) {
+  if (Array.isArray(value)) return value.map(formatEvidence).join('；');
+  if (value && typeof value === 'object') return JSON.stringify(value);
+  return String(value ?? '');
+}
+
+export function sourceLabel(value) {
+  const sources = {
+    'verified-current-account': '当前账号只读识别',
+    'file-handle': '进程文件句柄',
+    'open-file-handle': '进程文件句柄',
+    'open-handle': '进程文件句柄',
+    handle: '进程文件句柄',
+    'restart-manager': '文件占用关系',
+    'command-line': '进程启动参数',
+    'process-command-line': '进程启动参数',
+    'window-title': '窗口标题',
+    memory: '进程信息',
+  };
+  return sources[value] || value || '本地识别';
+}

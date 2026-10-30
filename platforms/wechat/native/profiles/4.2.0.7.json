@@ -1,0 +1,29 @@
+{
+  "boundary": "Data-only binary profile for the read-only current-account reader; no execution or messaging capability.",
+  "schemaVersion": 1,
+  "reader": "current-manager-msvc-string-v1",
+  "moduleName": "Weixin.dll",
+  "version": "4.2.0.7",
+  "architecture": "x64",
+  "dllSha256": "9beb1051449e768417d770915646815a5bd1899cc2779f758069820794358ee0",
+  "managerPointerRva": "0xbcf4d70",
+  "managerVtableRva": "0x9040b98",
+  "ownerVtableRva": "0x90c0c78",
+  "getterRva": "0x469a0",
+  "getterSlotOffset": "0x60",
+  "ownerOffset": "0x68",
+  "controlOffset": "0x70",
+  "selfOffset": "0x48",
+  "strongCountOffset": "0x8",
+  "codeChecks": [
+    {
+      "rva": "0x47220",
+      "bytes": "56 48 83 ec 40 48 89 ce 48 8b 05 91 dc 42 0b 48 31 e0 48 89 44 24 38 48 8b 0d 32 db ca 0b 48 8b 01 48 8d 54 24 20 ff 50 60"
+    },
+    {
+      "rva": "0x469a0",
+      "bytes": "48 89 d0 48 8b 51 70 48 85 d2 74 14 f0 ff 42 08 48 8b 51 70 48 8b 49 68 48 89 08 48 89 50 08 c3 31 d2 48 8b 49 68 48 89 08 48 89 50 08 c3"
+    }
+  ],
+  "research": "Current owner layout referenced from WXcc read-native-4.2.js; manager chain confirmed by offline getter disassembly and read-only live validation on 2026-10-30."
+}

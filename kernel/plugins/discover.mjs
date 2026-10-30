@@ -2,13 +2,14 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { validateManifest } from './manifest.mjs';
+import { releaseResources } from './cleanup.mjs';
 
 /**
  * Boundary: directory discovery, namespace ownership, and lifecycle only.
  * Each plugin is installed atomically; a failed registration rolls back its routes.
  * Removal/addition takes effect on the next host restart; no central allowlist exists.
  */
-export async function discoverPlugins({ directory, router, importer = url => import(url), loadTimeoutMs = 5000 }) {
+export async function discoverPlugins({ directory, router, importer = url => import(url), loadTimeoutMs = 5000, cleanupTimeoutMs = 1000 }) {
   let entries;
   try { entries = await readdir(directory, { withFileTypes: true }); }
   catch (error) { if (error.code === 'ENOENT') return { platforms: [], dispose: async () => {} }; throw error; }
@@ -41,7 +42,7 @@ export async function discoverPlugins({ directory, router, importer = url => imp
             if (typeof cleanup !== 'function') throw new TypeError('cleanup 必须为函数');
             if (registrationClosed) {
               // A timed-out asynchronous registration may finish later; release late resources too.
-              Promise.resolve().then(cleanup).catch(() => {});
+              void releaseResources([cleanup], cleanupTimeoutMs);
             } else cleanups.push(cleanup);
           },
         }));
@@ -54,13 +55,13 @@ export async function discoverPlugins({ directory, router, importer = url => imp
       disposers.push(async () => {
         registrationClosed = true;
         namespace.dispose();
-        await Promise.allSettled(cleanups.map(cleanup => Promise.resolve().then(cleanup)));
+        await releaseResources(cleanups, cleanupTimeoutMs);
       });
     } catch (error) {
       clearTimeout(timer);
       registrationClosed = true;
       namespace?.dispose();
-      await Promise.allSettled(cleanups.map(cleanup => Promise.resolve().then(cleanup)));
+      await releaseResources(cleanups, cleanupTimeoutMs);
       console.warn(`[插件 ${entry.name}] ${error?.message || '加载失败'}`);
       if (manifest) platforms.push({ ...manifest, status: 'error', error: '插件加载失败，请查看开发终端。' });
     }

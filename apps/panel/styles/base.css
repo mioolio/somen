@@ -1,6 +1,6 @@
 /* 边界：浏览器重置和通用控件；业务布局、状态配色留在平台目录。 */
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 360px; }
+body { margin: 0; min-width: 280px; }
 button, input { font: inherit; }
 button, a, input { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }

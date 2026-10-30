@@ -3,15 +3,29 @@
  * 单个平台的前端加载失败只记录该插件故障，不阻止其他插件启动。
  */
 import { shallowRef, ref, markRaw } from 'vue';
+import { validatePanelRegistration } from './registration-contract.js';
 
 export const host = shallowRef({ platforms: [], failures: [], error: '' });
 export const loadingHost = ref(true);
 const available = new Set(['ready', 'active', 'loaded']);
 
+/** 动态 import 无取消 API；超时只隔离等待，不让故障面板持续阻塞宿主。 */
+async function importRegistration(load) {
+  let timer;
+  try {
+    return await Promise.race([
+      load(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('平台面板加载超时')), 10000);
+      }),
+    ]);
+  } finally { clearTimeout(timer); }
+}
+
 export async function discoverPlatforms(modules) {
   loadingHost.value = true;
   try {
-    const response = await fetch('/api/platforms', { cache: 'no-store' });
+    const response = await fetch('/api/platforms', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('暂时无法连接本地服务');
     const payload = await response.json();
     if (!Array.isArray(payload.platforms)) throw new Error('本地服务返回的平台列表无效');
@@ -28,10 +42,8 @@ export async function discoverPlatforms(modules) {
         continue;
       }
       try {
-        const { default: registration } = await entry[1]();
-        if (registration.id !== item.id || !Array.isArray(registration.routes)) {
-          throw new Error('平台注册信息不完整');
-        }
+        const { default: registration } = await importRegistration(entry[1]);
+        validatePanelRegistration(registration, item);
         platforms.push(markRaw(registration));
       } catch {
         failures.push({ id: item.id, message: '平台面板加载失败' });
@@ -39,7 +51,8 @@ export async function discoverPlatforms(modules) {
     }
     host.value = { platforms, failures, error: '' };
   } catch (error) {
-    host.value = { platforms: [], failures: [], error: error.message || '连接本地服务失败' };
+    host.value = { platforms: [], failures: [], error: error.name === 'TimeoutError'
+      ? '连接本地服务超时，请重新尝试' : error.message || '连接本地服务失败' };
   } finally {
     loadingHost.value = false;
   }
