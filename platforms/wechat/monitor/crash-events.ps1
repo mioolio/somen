@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory=$true)][string]$StartedAt,
     [Parameter(Mandatory=$true)][string]$Until,
     [Parameter(Mandatory=$true)][ValidateSet('Weixin.exe','WeChat.exe')][string]$ApplicationName
@@ -40,7 +40,7 @@ $safe = @(foreach ($event in $events) {
     [PSCustomObject]@{
         eventId=[int]$event.Id; time=$event.TimeCreated.ToUniversalTime().ToString('o')
         application=$app; pid=[string]$fields.ProcessId; processStartedAt=$creation
-        reportId=$reportId; code=$code; faultModule=[IO.Path]::GetFileName($module)
+        reportId=$reportId; code=$code; faultModule=[IO.Path]::GetFileName($module); faultOffset=[string]$fields.FaultingOffset
     }
 })
 ConvertTo-Json -InputObject $safe -Depth 3 -Compress

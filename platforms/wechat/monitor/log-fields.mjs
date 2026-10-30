@@ -11,8 +11,9 @@ export function diagnosticFields(details = {}) {
       && !value.startsWith('wxid_')) result[key] = value;
     if (key === 'sessionRef' && typeof value === 'string' && /^[a-f0-9]{24}$/.test(value)) result.sessionRef = value;
     if (key === 'time' && typeof value === 'string' && Number.isFinite(Date.parse(value))) result.time = new Date(value).toISOString();
-    if (key === 'faultModule' && typeof value === 'string' && /^[A-Za-z0-9_.-]{1,100}\.(?:dll|exe)$/i.test(value)
+    if (key === 'faultModule' && typeof value === 'string' && /^[A-Za-z0-9_.-]{1,100}\.(?:dll|exe)(?:_unloaded)?$/i.test(value)
       && !value.startsWith('wxid_')) result.faultModule = value;
+    if (key === 'faultOffset' && typeof value === 'string' && /^(?:0x)?[a-f0-9]{1,16}$/i.test(value)) result.faultOffset = value;
   }
   if (details?.error) {
     const error = details.error;

@@ -1,6 +1,7 @@
 /**
  * 边界：匹配后端成功加载的平台与前端注册文件，不了解平台内部行为。
  * 单个平台的前端加载失败只记录该插件故障，不阻止其他插件启动。
+ * 宿主加载状态由 main.js 覆盖发现和路由就绪的完整生命周期。
  */
 import { shallowRef, ref, markRaw } from 'vue';
 import { validatePanelRegistration } from './registration-contract.js';
@@ -23,7 +24,6 @@ async function importRegistration(load) {
 }
 
 export async function discoverPlatforms(modules) {
-  loadingHost.value = true;
   try {
     const response = await fetch('/api/platforms', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('暂时无法连接本地服务');
@@ -53,7 +53,5 @@ export async function discoverPlatforms(modules) {
   } catch (error) {
     host.value = { platforms: [], failures: [], error: error.name === 'TimeoutError'
       ? '连接本地服务超时，请重新尝试' : error.message || '连接本地服务失败' };
-  } finally {
-    loadingHost.value = false;
   }
 }

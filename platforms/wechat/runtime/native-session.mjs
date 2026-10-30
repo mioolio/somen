@@ -3,6 +3,10 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { requireBinding } from './binding-proof.mjs';
 import { agentSource, versionDefinition } from './agent-sources.mjs';
 import { readSendImage, writeNativeImage } from './image-resource.mjs';
+import { retainNativeOwner } from './resident-owner.mjs';
+import { createTargetLifetime } from './target-lifetime.mjs';
+
+const residentOwners = new Set();
 
 /**
  * Boundary: one selected PID, one validated account and at most one recipient per runtime.
@@ -20,10 +24,14 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
   const frida = await import('frida');
   const device = await frida.getLocalDevice();
   const session = await device.attach(binding.pid);
+  const owner = retainNativeOwner(residentOwners, session);
+  const targetLifetime = createTargetLifetime();
+  try {
   let detached = false, blocked = false, quiesced = false, recipient = null, contactsSnapshot;
   const generation = randomUUID();
   const scripts = new Map();
   session.detached.connect((reason, crash) => {
+    targetLifetime.observeDetached(String(reason));
     detached = true; blocked = true;
     onEvent({ type: 'native.detached', reason: String(reason), crashed: Boolean(crash) });
   });
@@ -31,6 +39,7 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
     if (scripts.has(kind)) return scripts.get(kind);
     if (detached) throw new Error('工作微信已断开。');
     const script = await session.createScript(await agentSource(kind, binding.version), { name: `somen-${kind}` });
+    owner.scripts.add(script);
     script.message.connect(message => {
       if (message.type === 'error') {
         blocked = true;
@@ -141,12 +150,18 @@ export async function openNativeSession({ binding: requested, onEvent = () => {}
         capabilities: { contacts: allowed('contacts'), text: Boolean(recipient) && allowed('text'), image: Boolean(recipient) && allowed('image'), sticker: false, emojiSearch: false, emojiAdd: false } };
     },
     async dispose() {
-      if (detached) return { disposed: true };
+      const proof = targetLifetime.disposalProof();
+      if (proof.disposed) return proof;
       // Stop business operations without unloading executable callback memory.
       // This independent worker remains alive until the selected client exits.
       quiesced = true; blocked = true;
       onEvent({ type: 'native.retained-until-client-exit' });
-      return { disposed: false, retained: true, quiesced: true };
+      return { ...proof, quiesced: true };
     },
   };
+  } catch (error) {
+    // Every failure after attach has potentially created executable native owners.
+    error.safeToExit = false;
+    throw error;
+  }
 }

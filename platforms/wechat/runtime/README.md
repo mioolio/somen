@@ -16,4 +16,12 @@
 
 读取、发送的 native callbacks 可能在函数返回后仍由微信持有。2026-10-30 联系人首次验证后，按队列计数归零卸载曾发生微信访问冲突崩溃；计数不能证明所有 C++ vtable/回调引用已销毁。`dispose()` 因此只停止业务操作，返回 `retained:true`，绝不主动卸载脚本或 detach。独立子进程与脚本保持到微信进程自然退出；父宿主异常断开也不卸载、不强杀、不自动重启微信。此更正仍需恢复微信后进行持续稳定性实测，不能把代码修改当作已经证明根因。
 
+父宿主退出后的另一次故障定位到 `frida-agent.dll_unloaded`：只保留 JS 变量或 Frida 监听器不能保证 Node 事件循环继续运行。`worker-host.mjs` 使用明确的 referenced interval 保活，fork 设置 detached/windowsHide；IPC 断开后继续保留原生所有权。stdout/stderr 管道关闭和未处理 JS 故障均进入保留/停止业务状态，不能自然退出释放回调机器码。真实无 Frida 进程回归覆盖：杀掉父进程、IPC 断开、向已关闭父管道写诊断后，stub 子进程仍活；仅模拟目标 process-terminated 后退出。
+
+`native-session.mjs` 与 `observer-session.mjs` 各有模块级 residentOwners Set，attach 后立即保留 session，createScript 后在 load/start 前保留脚本。工厂失败也不释放引用。只有明确 `process-terminated` 才移除 registry；连接断开、device-lost、application-requested 等均不证明目标已死，`dispose()` 仍返回 retained。模拟回归覆盖工厂抛错及各种非终止 detach。
+
+独立的 `observe-stickers.mjs <pid>` 为工程观察入口，只读取面板已经绑定的同 PID/创建时间/账号/唯一联系人；观察器也通过 referenced worker-host 保活。只挂接已静态确认和前缀匹配的函数，不调用未知 native 方法，不触发发送。日志在忽略目录 `.local/wechat/sticker-observation.jsonl`，只记受限结构与匹配标志，不输出账号、联系人、正文、AES key 或令牌。
+
+采样控制文件 `.local/wechat/sticker-observer-control.json` 仅接受 revision、durationMs 和 hook 名称。hook 地址及前缀只从当前版本已审阅的 observer-hooks.json 读取；控制文件不能提供任意路径或地址。durationMs 为 0 且 hooks 为空数组可暂停采样，仍保留所有 callback 代码与 worker，不卸载探针。当前实际 type 47 发送、收藏和在线搜索 API 尚未完成，capability 保持 false。
+
 普通图片发送明确不是 type 47 表情包发送。当前原生能力 `sticker`、`emojiSearch`、`emojiAdd` 均为 false，不能将 GIF 图片发送伪装成表情能力。

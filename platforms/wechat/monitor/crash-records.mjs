@@ -9,9 +9,10 @@ function reportId(value) {
 function diagnostic(record) {
   const code = typeof record.code === 'string' && /^(?:0x)?[0-9a-f]{8}$/i.test(record.code)
     ? `0x${record.code.replace(/^0x/i, '').toLowerCase()}` : null;
-  const faultModule = typeof record.faultModule === 'string' && /^[A-Za-z0-9_.-]{1,100}\.(?:dll|exe)$/i.test(record.faultModule)
+  const faultModule = typeof record.faultModule === 'string' && /^[A-Za-z0-9_.-]{1,100}\.(?:dll|exe)(?:_unloaded)?$/i.test(record.faultModule)
     && !record.faultModule.startsWith('wxid_') ? record.faultModule : null;
-  return { eventId: record.eventId, code, time: record.time, faultModule };
+  const faultOffset = typeof record.faultOffset === 'string' && /^(?:0x)?[0-9a-f]{1,16}$/i.test(record.faultOffset) ? record.faultOffset : null;
+  return { eventId: record.eventId, code, time: record.time, faultModule, ...(faultOffset ? { faultOffset } : {}) };
 }
 export function correlateCrashRecords(records, { pid, startedAt, until, processName }) {
   if (!Array.isArray(records) || records.length > 100) throw new Error('Invalid crash event data.');

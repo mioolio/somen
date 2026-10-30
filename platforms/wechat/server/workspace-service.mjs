@@ -45,7 +45,8 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
       const created = await runtimeFactory({ binding, allowValidation: process.env.SOMEN_WECHAT_VALIDATION === binding.version, onEvent(event) {
         void monitor.recordEvent(event.type, { ...event, ...(typeof event.code === 'number' ? { exitCode: event.code } : {}) });
         if (revision === runtimeRevision && ['native.worker-error', 'native.worker-exit', 'native.operation-timeout', 'native.detached',
-          'native.agent-error', 'native.initialization-retained', 'native.initialization-failed'].includes(event.type)) blocked = true;
+          'native.agent-error', 'native.initialization-retained', 'native.initialization-failed',
+          'native.worker-unhandled-error', 'native.worker-unhandled-rejection'].includes(event.type)) blocked = true;
       } });
       if (disposed || revision !== runtimeRevision) {
         await created.dispose();
@@ -149,7 +150,12 @@ export function createWorkspaceService({ scan = async () => normalizeSnapshot(aw
     sendEmoticon: input => exclusive(() => emoticons.send(input)),
     restore: () => exclusive(async () => {
       const state = await monitor.restore();
-      if (state.selected) binding = { ...state.selected };
+      if (state.selected) {
+        const snapshot = await scan();
+        const instance = snapshot.instances.find(row => row.pid === state.selected.pid && row.startedAt === state.selected.startedAt
+          && row.account?.verified === true && row.account.id === state.selected.accountId);
+        binding = { ...state.selected, ...(instance ? { version: instance.version, executablePath: instance.executablePath } : {}) };
+      }
       // Restored monitoring never restores a sending target or attaches automatically.
       return getState();
     }),

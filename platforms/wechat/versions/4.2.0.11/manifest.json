@@ -13,6 +13,9 @@
       "send-text.js",
       "send-image.js",
       "send-exports.js"
+    ],
+    "sticker-observer": [
+      "sticker-observer.js"
     ]
   },
   "nativeValidation": {

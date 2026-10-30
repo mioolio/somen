@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
  */
 export async function createNativeRuntime({ binding, onEvent = () => {}, allowValidation = false, timeoutMs = 25000, forkImpl = fork }) {
   const child = forkImpl(fileURLToPath(new URL('./worker.mjs', import.meta.url)), [], {
-    windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], serialization: 'json', execArgv: [],
+    windowsHide: true, detached: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], serialization: 'json', execArgv: [],
   });
   const pending = new Map();
   let nextId = 0, stopped = false, blocked = false;

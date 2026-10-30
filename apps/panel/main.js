@@ -24,6 +24,7 @@ let pending;
 /** 同一时刻只允许一次发现；重试时撤销旧注册，防止重复路由。 */
 function refreshHost() {
   if (pending) return pending;
+  loadingHost.value = true;
   pending = (async () => {
     await discoverPlatforms(modules);
     for (const remove of removeRoutes) remove();
@@ -34,7 +35,11 @@ function refreshHost() {
     const current = router.currentRoute.value;
     const target = current.path === '/' ? host.value.platforms[0]?.path : current.fullPath;
     if (target) await router.replace(target);
-  })().finally(() => { pending = undefined; });
+  })().finally(() => {
+    // Host readiness includes the lazy route component, not only plugin discovery.
+    loadingHost.value = false;
+    pending = undefined;
+  });
   return pending;
 }
 
