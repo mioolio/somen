@@ -1,0 +1,19 @@
+/* 边界：全局设计变量；不依赖平台选择器，插件可使用这些公开令牌。 */
+:root {
+  font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: #25334a;
+  background: #f6f8fc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --color-primary: #3971ee;
+  --color-primary-dark: #285dd0;
+  --color-text: #25334a;
+  --color-muted: #7e8a9d;
+  --color-border: #e8edf4;
+  --color-surface: #fff;
+  --color-background: #f6f8fc;
+  --color-green: #299873;
+  --radius: 14px;
+  --shadow: 0 3px 16px #23395804;
+}

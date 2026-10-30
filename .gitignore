@@ -1,0 +1,11 @@
+# Boundary: generated dependencies, local state, and private runtime evidence stay local.
+node_modules/
+.local/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
